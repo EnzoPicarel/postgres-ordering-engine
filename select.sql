@@ -60,9 +60,41 @@ SELECT R.restaurant_id, R.nom, COUNT(Co.commande_id) AS nb_commandes
 
 --Chaque restaurant doit pouvoir consulter les statistiques de commandes de chaque plat par mois, pour l’année écoulée.
 
-SELECT R.restaurant_id, R.nom, MONTHNAME(Co.date_commande) ,count(A.items_id) as Nb_commande, I.items_id, I.nom from Restaurant as R 
+/*SELECT R.restaurant_id, R.nom, MONTHNAME(Co.date_commande) ,count(A.items_id) as Nb_commande, I.items_id, I.nom from Restaurant as R 
     NATURAL JOIN Item as I
     JOIN appartenir as A on A.items_id = I.items_id
     JOIN Commande as Co on Co.commande_id = A.commande_id
     WHERE Co.date_commande >= (NOW() - INTERVAL '1 year')
-    GROUP BY R.restaurant_id, R.nom, MONTHNAME(Co.date_commande),I.items_id, I.nom
+    GROUP BY R.restaurant_id, R.nom, MONTHNAME(Co.date_commande),I.items_id, I.nom*/
+
+--On commence par superposer toutes les ventes/commandes des items en traitant leur provenance avec l'ajout d'un champ type_vente (nécessaire pour compter tout les items commandé)
+WITH All_item_sales AS (
+    SELECT commande_id, items_id, 'Plat' AS type_vente
+    FROM contenir_items
+
+    UNION ALL 
+
+    SELECT commande_id, items_id, 'Menu' AS type_vente
+    FROM contenir_formules
+)
+
+--On sélectionne l'annee, le mois, le nombre de vente total, combien proviennent de Plat et combien proviennent de Menu et le revenu total du plat
+SELECT YEAR(C.date_commande) AS annee, MONTH(C.date_commande) AS mois, I.nom,
+    COUNT(*) as nb_total_ventes, SUM(CASE WHEN S.type_vente = 'Plat' THEN 1 ELSE 0 END) AS dont_x_plat,
+    SUM(CASE WHEN S.type_vente = 'Menu' THEN 1 ELSE 0 END) AS dont_x_menu,
+    (COUNT(*) * I.prix) AS revenu
+
+--On regroupe nos ventes totales avec la table commande pour récuperer la date de commande et avec la table items pour récupérer nom, prix et restaurant
+FROM All_item_sales AS S
+JOIN commandes AS C ON V.commande_id = C.commande_id
+JOIN items AS I ON V.item_id = I.item_id
+
+-- On filtre pour ne récupérer que les ventes/commandes de l'année passée et du restaurant sélectionné
+WHERE C.date_commande > DATE_SUB(NOW(), INTERVAL 1 YEAR)
+AND I.restaurant_id = 123 --À remplacer
+
+-- On regroupe par plat, année et mois comme demandé dans la question
+GROUP BY I.item_id, I.nom, YEAR(C.commandes), MONTH(C.commandes)
+
+-- (Facultatif) On peut trier pour avoir un résultat plus chronologique.
+ORDER BY I.nom, annee, mois;
