@@ -91,3 +91,15 @@ GROUP BY I.item_id, I.nom, YEAR(C.commandes), MONTH(C.commandes)
 
 -- (Facultatif) On peut trier pour avoir un résultat plus chronologique.
 ORDER BY I.nom, annee, mois;
+
+
+-- Un utilisateur qui renseigne sa position (GPS) peut consulter la liste des restaurtants disponibles, dans un rayon de 2km, rangés par ordre croissant de distance.
+
+SELECT R.nom, R.adresse, ST_Distance(R.coordonnees_gps, ST_SetSRID(ST_MakePoint([longitude_utilisateur], [latitude_utilisateur]), 4326)) as distance_en_m
+FROM restaurants as R
+WHERE ST_DWithin(
+    R.coordonnees_gps,
+    ST_SetSRID(ST_MakePoint([longitude_utilisateur], [latitude_utilisateur]), 4326),
+    2000
+);
+ORDER BY distance_en_m ASC
