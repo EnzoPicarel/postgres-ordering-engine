@@ -2,7 +2,7 @@
 
 --Liste des restaurants de chaque catégorie.
 
-SELECT CR.*, R.* from categories_restaurants as CR
+SELECT CR.nom as catégorie, R.nom as restaurant, R.adresse, R.coordonnees_gps from categories_restaurants as CR
     JOIN avoir_categories_restaurants as L1 on L1.categorie_restaurant_id = CR.categorie_restaurant_id  
     JOIN restaurants as R on L1.restaurant_id = R.restaurant_id
     ORDER BY CR.categorie_restaurant_id;
@@ -38,7 +38,7 @@ SELECT Co.*, Cl.client_id from clients as Cl
 
 --La liste des clients avec un compte, avec le nombre de commandes qu’ils ont passé, et le montant total.
 
-SELECT Cl.client_id, Cl.nom, count(Co.commande_id), SUM(Co.prix_total_remise) from clients as Cl 
+SELECT Cl.client_id, Cl.nom, count(Co.commande_id), SUM(Co.prix_total_remise) as montant_total from clients as Cl 
     JOIN fidelite as F on F.client_id = Cl.client_id
     JOIN commandes as Co on Co.client_id = Cl.client_id
     GROUP BY Cl.client_id, Cl.nom;
@@ -91,7 +91,7 @@ JOIN items AS I ON S.item_id = I.item_id
 
 -- On filtre pour ne récupérer que les ventes/commandes de l'année passée et du restaurant sélectionné
 WHERE C.date_commande > (NOW() - INTERVAL '1 year')
-AND I.restaurant_id = 123 --À remplacer
+AND I.restaurant_id = 1 --À remplacer
 
 -- On regroupe par plat, année et mois comme demandé dans la question
 GROUP BY I.item_id, I.nom, EXTRACT(YEAR FROM(C.date_commande)), EXTRACT(MONTH FROM((C.date_commande)))
