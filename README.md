@@ -44,7 +44,7 @@ Pour se connecter à la base nouvellement créée :
 psql -U $DB_USER -d $DB_NAME
 ```
 
-## Suppreimer la base de données
+## Supprimer la base de données
 Pour supprimer la base de données :
 ```bash
 dropdb -U $DB_USER $DB_NAME
