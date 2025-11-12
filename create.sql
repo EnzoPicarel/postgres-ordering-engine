@@ -5,7 +5,7 @@ CREATE TABLE restaurants
     restaurant_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     adresse VARCHAR(255) NOT NULL,
-    coordonnees_gps geography(POINT, 4326) NOT NULL,
+    coordonnees_gps geography(POINT, 4326) NOT NULL
 );
 
 CREATE INDEX idx_restaurants_coords ON restaurants USING GIST (coordonnees_gps);
@@ -76,16 +76,16 @@ CREATE TABLE avoir_horaires_ouverture
     PRIMARY KEY (restaurant_id, horaire_ouverture_id)
 );
 
-CREATE TABLE catégories_restaurants
+CREATE TABLE categories_restaurants
 (
     categorie_restaurant_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE avoir_catégories_restaurants
+CREATE TABLE avoir_categories_restaurants
 (
     restaurant_id INT REFERENCES restaurants(restaurant_id),
-    categorie_restaurant_id INT REFERENCES catégories_restaurants(categorie_restaurant_id),
+    categorie_restaurant_id INT REFERENCES categories_restaurants(categorie_restaurant_id),
     PRIMARY KEY (restaurant_id, categorie_restaurant_id)
 );
 
@@ -111,7 +111,7 @@ CREATE TABLE commentaires
     date_commentaire TIMESTAMP NOT NULL,
     contenu TEXT NOT NULL,
     note INT CHECK (note >= 1 AND note <= 5),
-    fidelite_id INT REFERENCES fidelité(fidelite_id)
+    fidelite_id INT REFERENCES fidelite(fidelite_id)
 );
 
 CREATE TABLE formules
