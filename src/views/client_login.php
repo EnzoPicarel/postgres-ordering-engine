@@ -1,157 +1,119 @@
-<?php
-session_start();
-
-// Initialisation du message d'erreur s'il existe dans l'URL
-$error_msg = "";
-if (isset($_GET['error']) && $_GET['error'] == 1) {
-    $error_msg = "Compte introuvable. Vérifiez votre nom et votre email.";
-}
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion Client - T'Abeille</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Client</title>
     <style>
-        /* --- Style Global (cohérent avec liste_ingredients.php) --- */
-        body { 
-            font-family: sans-serif; 
-            padding: 20px; 
-            max-width: 800px; 
-            margin: auto; 
-            background-color: #f9f9f9; 
-            color: #333;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-
-        /* Bouton Retour */
-        .retour-btn { 
-            text-decoration: none; 
-            color: #333; 
-            font-weight: bold; 
-            display: inline-block; 
-            margin-bottom: 20px;
-        }
-        .retour-btn:hover { color: #555; }
-
-        /* --- Carte de Connexion --- */
-        .login-card {
-            border: 1px solid #ddd;
-            padding: 40px; /* Un peu plus d'espace que la carte nutrition */
+        .login-container {
+            background-color: white;
+            padding: 30px;
             border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 450px; /* Largeur optimale pour un formulaire */
-            margin: 50px auto; /* Centré verticalement */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
         }
-
-        h2 { 
-            text-align: center; 
-            margin-top: 0; 
-            color: #2c3e50; 
-            margin-bottom: 30px;
-        }
-
-        /* --- Champs du formulaire --- */
-        .form-group {
+        h2 {
+            color: #2c3e50;
             margin-bottom: 20px;
         }
-
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: bold;
             color: #555;
         }
-
         input[type="text"],
         input[type="email"] {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
+            padding: 10px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            box-sizing: border-box; /* Empêche le padding de dépasser */
+            box-sizing: border-box; /* Pour que le padding ne casse pas la largeur */
             font-size: 16px;
         }
-
         input:focus {
-            border-color: #2c3e50;
+            border-color: #3498db;
             outline: none;
         }
-
-        /* --- Bouton d'action --- */
-        .btn-submit {
+        button {
             width: 100%;
             padding: 12px;
-            background-color: #2c3e50; /* Même bleu foncé que tes titres */
+            background-color: #2ecc71;
             color: white;
             border: none;
             border-radius: 4px;
             font-size: 16px;
-            font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
+            font-weight: bold;
+            transition: background-color 0.3s;
         }
-
-        .btn-submit:hover {
-            background-color: #1a252f;
+        button:hover {
+            background-color: #27ae60;
         }
-
-        /* --- Message d'erreur --- */
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            padding: 15px;
+        .error-msg {
+            background-color: #fce4e4;
+            color: #c0392b;
+            padding: 10px;
             border-radius: 4px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 0.95em;
+            margin-bottom: 15px;
+            border: 1px solid #f1aeb5;
         }
-
-        /* --- Liens bas de page --- */
-        .footer-links {
-            text-align: center;
+        .back-link {
+            display: block;
             margin-top: 20px;
+            color: #7f8c8d;
+            text-decoration: none;
             font-size: 0.9em;
         }
-        .footer-links a {
-            color: #555;
-            text-decoration: none;
-            margin: 0 10px;
-        }
-        .footer-links a:hover {
+        .back-link:hover {
+            color: #2c3e50;
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h2>Suivi de Commande</h2>
+    <div class="login-container">
+        <h2>Connexion 🔐</h2>
 
-        <?php if (!empty($error_msg)): ?>
-            <div class="alert-error">
-                <?= htmlspecialchars($error_msg) ?>
+        <?php 
+        // Affichage du message d'erreur si la variable existe et n'est pas vide
+        if (isset($error_message) && !empty($error_message)): ?>
+            <div class="error-msg">
+                <?= htmlspecialchars($error_message) ?>
             </div>
         <?php endif; ?>
 
         <form action="login.php" method="POST">
-            
             <div class="form-group">
-                <label for="nom">Votre Nom</label>
+                <label for="nom">Nom du compte :</label>
                 <input type="text" id="nom" name="nom" placeholder="Ex: Dupont" required>
             </div>
 
             <div class="form-group">
-                <label for="email">Votre Email</label>
+                <label for="email">Adresse Email :</label>
                 <input type="email" id="email" name="email" placeholder="Ex: jean.dupont@email.com" required>
             </div>
 
-            <button type="submit" class="btn-submit" href="index.php">Se connecter</button>
-
+            <button type="submit">Se connecter</button>
         </form>
+
+        <a href="index.php" class="back-link">← Retour à l'accueil sans se connecter</a>
     </div>
 
 </body>

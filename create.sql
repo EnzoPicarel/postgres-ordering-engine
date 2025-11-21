@@ -148,6 +148,7 @@ CREATE TABLE commandes
 (
     commande_id SERIAL PRIMARY KEY,
     date_commande TIMESTAMP NOT NULL,
+    heure_retrait TIMESTAMP,
     prix_total_remise DECIMAL(10, 2) NOT NULL,
     client_id INT REFERENCES clients(client_id),
     restaurant_id INT REFERENCES restaurants(restaurant_id)
