@@ -1,4 +1,4 @@
-CREATE EXTENSION postgis;
+CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TABLE restaurants
 (
@@ -22,8 +22,8 @@ CREATE TABLE items
     nom VARCHAR(255) NOT NULL,
     prix DECIMAL(10, 2) NOT NULL,
     est_disponible BOOLEAN NOT NULL DEFAULT TRUE,
-    restaurant_id INT REFERENCES restaurants(restaurant_id),
-    categorie_item_id INT REFERENCES categories_items(categorie_item_id)
+    restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE, 
+    categorie_item_id INT REFERENCES categories_items(categorie_item_id) ON DELETE CASCADE 
 );
 
 CREATE TABLE proprietes_items
@@ -34,8 +34,8 @@ CREATE TABLE proprietes_items
 
 CREATE TABLE avoir_proprietes_items
 (
-    item_id INT REFERENCES items(item_id),
-    propriete_items_id INT REFERENCES proprietes_items(propriete_items_id),
+    item_id INT REFERENCES items(item_id) ON DELETE CASCADE,
+    propriete_items_id INT REFERENCES proprietes_items(propriete_items_id) ON DELETE CASCADE,
     PRIMARY KEY (item_id, propriete_items_id)
 );
 
@@ -49,16 +49,16 @@ CREATE TABLE ingredients
 
 CREATE TABLE composer
 (
-    item_id INT REFERENCES items(item_id),
-    ingredient_id INT REFERENCES ingredients(ingredient_id),
+    item_id INT REFERENCES items(item_id) ON DELETE CASCADE,
+    ingredient_id INT REFERENCES ingredients(ingredient_id) ON DELETE CASCADE,
     quantite_g INT NOT NULL,
     PRIMARY KEY (item_id, ingredient_id)
 );
 
 CREATE TABLE etre_accompagne_de
 (
-    item_id1 INT REFERENCES items(item_id),
-    item_id2 INT REFERENCES items(item_id),
+    item_id1 INT REFERENCES items(item_id) ON DELETE CASCADE,
+    item_id2 INT REFERENCES items(item_id) ON DELETE CASCADE,
     PRIMARY KEY (item_id1, item_id2)
 );
 
@@ -72,8 +72,8 @@ CREATE TABLE horaires_ouverture
 
 CREATE TABLE avoir_horaires_ouverture
 (
-    restaurant_id INT REFERENCES restaurants(restaurant_id),
-    horaire_ouverture_id INT REFERENCES horaires_ouverture(horaire_ouverture_id),
+    restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE,
+    horaire_ouverture_id INT REFERENCES horaires_ouverture(horaire_ouverture_id) ON DELETE CASCADE,
     PRIMARY KEY (restaurant_id, horaire_ouverture_id)
 );
 
@@ -85,8 +85,8 @@ CREATE TABLE categories_restaurants
 
 CREATE TABLE avoir_categories_restaurants
 (
-    restaurant_id INT REFERENCES restaurants(restaurant_id),
-    categorie_restaurant_id INT REFERENCES categories_restaurants(categorie_restaurant_id),
+    restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE,
+    categorie_restaurant_id INT REFERENCES categories_restaurants(categorie_restaurant_id) ON DELETE CASCADE,
     PRIMARY KEY (restaurant_id, categorie_restaurant_id)
 );
 
@@ -102,8 +102,8 @@ CREATE TABLE fidelite
 (
     fidelite_id SERIAL PRIMARY KEY,
     points INT NOT NULL DEFAULT 0,
-    client_id INT REFERENCES clients(client_id),
-    restaurant_id INT REFERENCES restaurants(restaurant_id)
+    client_id INT REFERENCES clients(client_id) ON DELETE CASCADE,
+    restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
 );
 
 CREATE TABLE commentaires
@@ -112,7 +112,7 @@ CREATE TABLE commentaires
     date_commentaire TIMESTAMP NOT NULL,
     contenu TEXT NOT NULL,
     note INT CHECK (note >= 1 AND note <= 5),
-    fidelite_id INT REFERENCES fidelite(fidelite_id)
+    fidelite_id INT REFERENCES fidelite(fidelite_id) ON DELETE CASCADE
 );
 
 CREATE TABLE formules
@@ -120,13 +120,13 @@ CREATE TABLE formules
     formule_id SERIAL PRIMARY KEY,
     nom VARCHAR(255) NOT NULL,
     prix DECIMAL(10, 2) NOT NULL,
-    restaurant_id INT REFERENCES restaurants(restaurant_id)
+    restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
 );
 
 CREATE TABLE composer_formules
 (
-    formule_id INT REFERENCES formules(formule_id),
-    categorie_item_id INT REFERENCES categories_items(categorie_item_id),
+    formule_id INT REFERENCES formules(formule_id) ON DELETE CASCADE,
+    categorie_item_id INT REFERENCES categories_items(categorie_item_id) ON DELETE CASCADE,
     PRIMARY KEY (formule_id, categorie_item_id)
 );
 
@@ -139,8 +139,8 @@ CREATE TABLE conditions_formules
 
 CREATE TABLE avoir_conditions_formules
 (
-    formule_id INT REFERENCES formules(formule_id),
-    condition_formule_id INT REFERENCES conditions_formules(condition_formule_id),
+    formule_id INT REFERENCES formules(formule_id) ON DELETE CASCADE,
+    condition_formule_id INT REFERENCES conditions_formules(condition_formule_id) ON DELETE CASCADE,
     PRIMARY KEY (formule_id, condition_formule_id)
 );
 
@@ -151,14 +151,14 @@ CREATE TABLE commandes
     heure_retrait TIMESTAMP,
     prix_total_remise DECIMAL(10, 2) NOT NULL,
     est_acheve BOOLEAN DEFAULT FALSE,
-    client_id INT REFERENCES clients(client_id),
-    restaurant_id INT REFERENCES restaurants(restaurant_id)
+    client_id INT REFERENCES clients(client_id) ON DELETE CASCADE,
+    restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
 );
 
 CREATE TABLE contenir_items
 (
-    commande_id INT REFERENCES commandes(commande_id),
-    item_id INT REFERENCES items(item_id),
+    commande_id INT REFERENCES commandes(commande_id) ON DELETE CASCADE,
+    item_id INT REFERENCES items(item_id) ON DELETE CASCADE,
     quantite INT NOT NULL,
     specifications TEXT,
     PRIMARY KEY (commande_id, item_id)
@@ -166,9 +166,9 @@ CREATE TABLE contenir_items
 
 CREATE TABLE contenir_formules
 (
-    commande_id INT REFERENCES commandes(commande_id),
-    formule_id INT REFERENCES formules(formule_id),
-    item_id INT REFERENCES items(item_id),
+    commande_id INT REFERENCES commandes(commande_id) ON DELETE CASCADE,
+    formule_id INT REFERENCES formules(formule_id) ON DELETE CASCADE,
+    item_id INT REFERENCES items(item_id) ON DELETE CASCADE,
     quantite INT NOT NULL,
     PRIMARY KEY (commande_id, formule_id, item_id)
 );
@@ -179,20 +179,20 @@ CREATE TABLE remises
     type_remise VARCHAR(50) NOT NULL,
     description TEXT NOT NULL,
     seuil_points INT NOT NULL,
-    restaurant_id INT REFERENCES restaurants(restaurant_id)
+    restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
 );
 
 CREATE TABLE item_offert
 (
-    remise_id INT REFERENCES remises(remise_id),
-    item_id INT REFERENCES items(item_id),
+    remise_id INT REFERENCES remises(remise_id) ON DELETE CASCADE,
+    item_id INT REFERENCES items(item_id) ON DELETE CASCADE,
     quantite INT NOT NULL,
     PRIMARY KEY (remise_id, item_id)
 );
 
 CREATE TABLE pourcentage_remise
 (
-    remise_id INT REFERENCES remises(remise_id),
+    remise_id INT REFERENCES remises(remise_id) ON DELETE CASCADE,
     pourcentage DECIMAL(5, 2) NOT NULL,
     PRIMARY KEY (remise_id)
 );
