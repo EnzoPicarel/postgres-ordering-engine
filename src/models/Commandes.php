@@ -41,6 +41,22 @@ class Commande {
         
         return $stmt;
     }
+    
+    public function afficherItemCommande($commande_id) {
+        $path = __DIR__ . "/../../sql_requests/getAllItemCommande.sql";
+
+        $query = file_get_contents($path);
+
+        if ($query == false) {
+            die("Erreur : impossible de lire fichier de requête SQL :" . $path);
+        }
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $commande_id);
+        $stmt->execute();
+        
+        return $stmt;
+    }
 }
 
 ?>
