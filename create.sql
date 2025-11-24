@@ -149,7 +149,7 @@ CREATE TABLE commandes
     commande_id SERIAL PRIMARY KEY,
     date_commande TIMESTAMP NOT NULL,
     heure_retrait TIMESTAMP,
-    prix_total_remise DECIMAL(10, 2) NOT NULL,
+    prix_total_remise DECIMAL(10, 2) DEFAULT 0,
     est_acheve BOOLEAN DEFAULT FALSE,
     client_id INT REFERENCES clients(client_id) ON DELETE CASCADE,
     restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
@@ -196,3 +196,28 @@ CREATE TABLE pourcentage_remise
     pourcentage DECIMAL(5, 2) NOT NULL,
     PRIMARY KEY (remise_id)
 );
+
+
+-- FUNCTIONS
+
+
+CREATE OR REPLACE FUNCTION update_prix_commande_func() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE commandes
+    SET prix_total_remise = (
+        SELECT COALESCE(SUM(i.prix * ci.quantite), 0)
+        FROM contenir_items ci
+        JOIN items i ON ci.item_id = i.item_id
+        WHERE ci.commande_id = NEW.commande_id
+    )
+    WHERE commande_id = NEW.commande_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- TRIGGERS
+
+CREATE TRIGGER trg_update_prix_commande
+AFTER INSERT OR UPDATE OR DELETE ON contenir_items
+FOR EACH ROW
+EXECUTE FUNCTION update_prix_commande_func();

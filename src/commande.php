@@ -3,12 +3,14 @@
 ini_set('display_errors',1);
 error_reporting(E_ALL);
 
+session_start();
+
 
 require_once './config/Database.php';
 require_once './models/Commandes.php';
 
-if (isset($_GET['client_id']) && is_numeric($_GET['client_id'])) {
-    $client_id = $_GET['client_id'];
+if (isset($_SESSION['client_id']) && is_numeric($_SESSION['client_id'])) {
+    $client_id = $_SESSION['client_id'];
 }
 else {
     die("Erreur : Aucun ID client fourni.");
