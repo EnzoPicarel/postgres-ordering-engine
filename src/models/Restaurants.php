@@ -1,5 +1,6 @@
 <?php
 require_once 'config/Database.php';
+require_once 'Query.php';
 
 class Restaurant {
     private $conn;
@@ -9,13 +10,7 @@ class Restaurant {
 
     public function getAllRestaurants() {
 
-        $path = __DIR__ . '/../../sql_requests/getAllRestaurants.sql';
-        
-        $query = file_get_contents($path);
-
-        if ($query === false) {
-            die("Erreur : Impossible de lire le fichier de requête SQL getAllRestaurants.sql.");
-        }
+        $query = Query::loadQuery('sql_requests/getAllRestaurants.sql');
         $stmt = $this->conn->prepare($query);
 
         $stmt->execute();
@@ -24,13 +19,7 @@ class Restaurant {
     }
 
     public function getByID($restaurant_id) {
-        $path = __DIR__ . '/../../sql_requests/getRestaurantById.sql';
-
-        $query = file_get_contents($path);
-
-        if ($query === false) {
-            die("Erreur : impossible de lire le fichier de requête SQL getRestaurantById.sql.");
-        }
+        $query = Query::loadQuery('sql_requests/getRestaurantById.sql');
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1,$restaurant_id);
         $stmt->execute();

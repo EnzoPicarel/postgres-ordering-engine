@@ -1,5 +1,8 @@
 <?php
 
+
+require_once 'Query.php';
+
 class Ingredient {
     private $conn;
 
@@ -8,14 +11,7 @@ class Ingredient {
     }
 
     public function getIngredientsByItem($item_id) {
-        $path = __DIR__ . '/../../sql_requests/getIngredientsByItem.sql';
-
-        $query = file_get_contents($path);
-
-        if ($query == false) {
-            die("Erreur : impossible de lire le fichier de requête SQL getIngredientsByItem.sql.");
-        }
-
+        $query = Query::loadQuery('sql_requests/getIngredientsByItem.sql');
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1,$item_id);
         $stmt->execute();

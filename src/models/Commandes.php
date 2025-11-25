@@ -1,5 +1,7 @@
 <?php
 
+require_once 'Query.php';
+
 class Commande {
     private $conn;
     public function __construct($db) {
@@ -7,13 +9,7 @@ class Commande {
     }
 
     public function getCurrentCommande($client_id) {
-        $path = __DIR__ . '/../../sql_requests/getCurrentCommande.sql';
-
-        $query = file_get_contents($path);
-
-        if ($query == false) {
-            die("Erreur : impossible de lire fichier de requête SQL getCurrentCommande.sql");
-        }
+        $query = Query::loadQuery('sql_requests/getCurrentCommande.sql');
 
         $stmt = $this->conn->prepare($query);
 
@@ -25,13 +21,7 @@ class Commande {
     }
 
     public function suppressCurrentCommande($commande_id) {
-        $path = __DIR__ . '/../../sql_requests/suppressCurrentCommande.sql';
-
-        $query = file_get_contents($path);
-
-        if ($query == false) {
-            die("Erreur : impossible de lire fichier de requête SQL :" . $path);
-        }
+        $query = Query::loadQuery('sql_requests/suppressCurrentCommande.sql');
 
         $stmt = $this->conn->prepare($query);
 
@@ -43,13 +33,7 @@ class Commande {
     }
     
     public function afficherItemCommande($commande_id) {
-        $path = __DIR__ . "/../../sql_requests/getAllItemCommande.sql";
-
-        $query = file_get_contents($path);
-
-        if ($query == false) {
-            die("Erreur : impossible de lire fichier de requête SQL :" . $path);
-        }
+        $query = Query::loadQuery('sql_requests/getAllItemCommande.sql');
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $commande_id);
@@ -58,19 +42,29 @@ class Commande {
         return $stmt;
     }
 
-
-    public function createCommandeOrGetLastOne($client_id, $restaurant_id) {
-        $path1 = __DIR__ . '/../../sql_requests/getCurrentCommandeFromRestaurant.sql';
-        $query1 = file_get_contents($path1);
-
-        if ($query1 == false) die("Erreur SQL:" . $path1);
+    private function getLastCommandeFromRestaurant($client_id, $restaurant_id) {
+        $query1 = Query::loadQuery('sql_requests/getCurrentCommandeFromRestaurant.sql');
 
         $stmt1 = $this->conn->prepare($query1);
         $stmt1->bindParam(1, $client_id);
         $stmt1->bindParam(2, $restaurant_id);
         $stmt1->execute();
 
-        $row = $stmt1->fetch(PDO::FETCH_ASSOC);
+        return $stmt1->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function createCommande($client_id, $restaurant_id) {
+        $query2 = Query::loadQuery('sql_requests/createNewCommande.sql');
+
+        $stmt2 = $this->conn->prepare($query2);
+        $stmt2->bindParam(1, $client_id);
+        $stmt2->bindParam(2, $restaurant_id);
+        $stmt2->execute();
+    }
+
+    public function createCommandeOrGetLastOne($client_id, $restaurant_id) {
+        
+        $row = Commande::getLastCommandeFromRestaurant($client_id, $restaurant_id);
 
         if ($row) {
             return $row; 
@@ -78,25 +72,13 @@ class Commande {
 
         // Si on arrive ici c'est que la commande n'existait pas 
 
-        $path2 = __DIR__ . '/../../sql_requests/createNewCommande.sql';
-        $query2 = file_get_contents($path2);
-        if ($query2 == false) die("Erreur SQL:" . $path2);
-
-        $stmt2 = $this->conn->prepare($query2);
-        $stmt2->bindParam(1, $client_id);
-        $stmt2->bindParam(2, $restaurant_id);
-        $stmt2->execute();
-
-        $stmt1->execute();
+        Commande::createCommande($client_id, $restaurant_id);
         
-        return $stmt1->fetch(PDO::FETCH_ASSOC);
+        return Commande::getLastCommandeFromRestaurant($client_id, $restaurant_id);
     }
 
     public function addItemToCommandeContenirItem($commande_id, $item_id) {
-        $path0 = __DIR__ . '/../../sql_requests/getItemInContenirItem.sql';
-        $query0 = file_get_contents($path0);
-        
-        if ($query0 === false) die("Erreur SQL: " . $path0);
+        $query0 = Query::loadQuery('sql_requests/getItemInContenirItem.sql');
 
         $stmt0 = $this->conn->prepare($query0);
         $stmt0->bindParam(1, $commande_id);
@@ -106,10 +88,7 @@ class Commande {
 
         if ($stmt0->fetch() === false) {
             
-            $path1 = __DIR__ . '/../../sql_requests/addItemToCommandeContenirItem.sql';
-            $query1 = file_get_contents($path1);
-            
-            if ($query1 === false) die("Erreur SQL: " . $path1);
+            $query1 = Query::loadQuery('sql_requests/addItemToCommandeContenirItem.sql');
 
             $stmt1 = $this->conn->prepare($query1);
             $stmt1->bindParam(1, $commande_id);
@@ -119,10 +98,7 @@ class Commande {
 
         } else {
             
-            $path2 = __DIR__ . '/../../sql_requests/updateQuantityContenirItem.sql';
-            $query2 = file_get_contents($path2);
-
-            if ($query2 === false) die("Erreur SQL: " . $path2);
+            $query2 = Query::loadQuery('sql_requests/updateQuantityContenirItem.sql');
 
             $stmt2 = $this->conn->prepare($query2);
             $stmt2->bindParam(1, $commande_id);
