@@ -216,8 +216,11 @@
                 // --- HEADER ---
                 echo "<div class='commande-header'>";
                     echo "<div>";
-                        echo "<h2>Commande #" . htmlspecialchars($commande_id) . "</h2>";
+                        echo "<div style='color: #e67e22; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 4px;'>" . htmlspecialchars($restaurant_commande) . "</div>";
+                        
+                        echo "<h2 style='margin: 0;'>Commande #" . htmlspecialchars($commande_id) . "</h2>";
                     echo "</div>";
+
                     echo "<div class='commande-meta'>";
                         echo "📅 " . $dateAffichee;
                         if (!empty($commande['heure_retrait'])) {
@@ -229,10 +232,10 @@
 
                 // --- CORPS ---
                 echo "<div class='commande-body'>";
-
+                    
                     // 1. FORMULES
                     if (!empty($commande['liste_formules'])) {
-                        echo "<h3 class='titre-formule'>🍱 Menus & Formules</h3>";
+                        echo "<h3 class='titre-formule'>🍱 Formules</h3>";
                         
                         echo "<table class='modern-table'>";
                         echo "<thead>
