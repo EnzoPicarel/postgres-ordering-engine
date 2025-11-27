@@ -166,6 +166,24 @@
             border-color: #fca5a5;
         }
 
+        .btn-confirmer {
+            background-color:rgb(4, 185, 58);
+            color:rgb(255, 255, 255);
+            border: 1px solidrgb(4, 185, 58);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-confirmer:hover {
+            background-color:rgb(0, 131, 28);
+            color:rgb(148, 204, 160);
+            border-color:rgb(0, 131, 28);
+        }
+
         /* --- EMPTY STATE --- */
         .alert-empty {
             text-align: center;
@@ -283,6 +301,14 @@
                         echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.');\">";
                             echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
                             echo "<button type='submit' class='btn-annuler'>🗑️ Annuler cette commande</button>";
+                        echo "</form>";
+                    echo "</div>";
+
+                    // 5. ACTION (Confirmer)
+                    echo "<div class='actions-footer'>";
+                        echo "<form action='confirmer_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir confirmer cette commande ?');\">";
+                            echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
+                            echo "<button type='submit' class='btn-confirmer'>Commander</button>";
                         echo "</form>";
                     echo "</div>";
 
