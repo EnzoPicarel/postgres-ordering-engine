@@ -11,6 +11,7 @@
             --text-main: #2c3e50;
             --primary-color: #1a1a1a;
             --accent-color: #e67e22;
+            --green-success: #27ae60;
             --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
@@ -44,10 +45,38 @@
             gap: 15px;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
         .header-actions a {
             text-decoration: none;
-            margin-left: 15px;
             font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* BOUTON GPS */
+        .btn-geo {
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid #ddd;
+            background: white;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-geo:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background-color: #fff8f0;
         }
 
         /* FILTRES */
@@ -56,7 +85,6 @@
             overflow-x: auto;
             white-space: nowrap;
             padding-bottom: 10px;
-            /* Masquer scrollbar */
             scrollbar-width: none; 
             -ms-overflow-style: none;
         }
@@ -93,13 +121,13 @@
             padding-left: 15px;
         }
 
-        /* GRILLE RESTAURANTS (CORRECTION DU CHEVAUCHEMENT) */
+        /* GRILLE RESTAURANTS */
         .restaurant-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 40px; /* Espace large entre les cartes */
+            gap: 30px;
             padding-bottom: 50px;
-            align-items: start; /* Empêche l'étirement vertical */
+            align-items: start;
         }
 
         .restaurant-card {
@@ -110,17 +138,14 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
-            position: relative;
             min-height: 180px;
-            
             text-decoration: none;
-            color: inherit;  
+            color: inherit;
         }
 
         .restaurant-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--hover-shadow);
-            z-index: 5;
         }
 
         .card-title {
@@ -128,112 +153,131 @@
             font-weight: 700;
             color: var(--text-main);
             text-decoration: none;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             display: block;
             line-height: 1.3;
         }
         
+        .card-title:hover { color: var(--accent-color); }
+
         .card-address {
             color: #7f8c8d;
             font-size: 0.9rem;
             margin-top: auto; 
-            display: flex;
-            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .distance-badge {
+            display: inline-block;
+            color: var(--green-success);
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            background-color: #e8f8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            width: fit-content;
         }
     </style>
 </head>
 <body>
-<div class="header-bar">
-    <?php if (isset($_SESSION['client_id'])): ?>
-        <p>Bonjour, <strong><?= htmlspecialchars($_SESSION['client_nom']) ?></strong>
-            <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
-                <span
-                    style="background-color: #f39c12; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; margin-left: 5px;">Mode
-                    Invité</span>
-            <?php endif; ?>
-            !
-        </p>
 
-        <div>
-            <a href="commande.php?client_id=<?= $_SESSION['client_id'] ?>">🛒 Mon panier</a>
-            <a href="suivi.php">📦 Suivi</a>
-            <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
-                <a href="historique.php">📋 Historique</a>
-            <?php endif; ?>
-            <a href="logout.php" style="color: red;">Se déconnecter</a>
-        </div>
-    <?php else: ?>
-        <div>
-            <a href="login_invite.php"
-                style="background-color: #27ae60; padding: 8px 15px; border-radius: 5px; margin-right: 10px;">👤 Commander
-                en tant qu'invité</a>
-            <a href="login.php">Se connecter</a> |
-            <a href="create_account.php">Créer un compte</a>
-        </div>
-    <?php endif; ?>
-</div>
 <div class="container">
 
     <div class="header-bar">
         <?php if ($est_connecte): ?>
-            <div>Bonjour, <strong><?= htmlspecialchars($nom_client) ?></strong> ! 👋</div>
+            <div>
+                Bonjour, <strong><?= htmlspecialchars($nom_client) ?></strong> ! 👋
+                
+                <?php if (isset($_SESSION['is_guest']) && $_SESSION['is_guest']): ?>
+                    <span style="background-color: #f39c12; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 5px;">
+                        Mode Invité
+                    </span>
+                <?php endif; ?>
+            </div>
+            
             <div class="header-actions">
-                <a href="commande.php" style="color:var(--primary-color);">Ma dernière commande</a>
+                <button onclick="getLocation()" class="btn-geo">
+                    📍 Trouver les restos autour de moi 
+                </button>
+            
+                <a href="commande.php" style="color:var(--primary-color);">🛒 Mon Panier</a>
+                <a href="suivi.php" style="color:var(--primary-color);">📦 Suivi</a>
+                
+                <?php if (!isset($_SESSION['is_guest']) || !$_SESSION['is_guest']): ?>
+                    <a href="historique.php" style="color:var(--primary-color);">📋 Historique</a>
+                <?php endif; ?>
+
                 <a href="logout.php" style="color: #e74c3c;">Se déconnecter</a>
             </div>
         <?php else: ?>
             <div class="header-actions">
+                <a href="login_invite.php" style="background-color: #27ae60; color: white; padding: 8px 12px; border-radius: 6px;">
+                    👤 Invité
+                </a>
                 <a href="login.php">Se connecter</a>
-                <a href="create_account.php" style="background:var(--primary-color); color:white; padding:8px 15px; border-radius:8px;">Créer un compte</a>
+                <a href="create_account.php" style="background:var(--primary-color); color:white; padding:8px 15px; border-radius:8px; text-decoration:none;">
+                    Créer un compte
+                </a>
             </div>
         <?php endif; ?>
     </div>
 
     <div class="filtres-wrapper">
-        <a href="index.php" class="btn-filtre <?= $cat_id === null ? 'actif' : '' ?>">
+        <a href="index.php" class="btn-filtre <?= ($current_cat === null && $lat === null) ? 'actif' : '' ?>">
             Tout voir
         </a>
 
         <?php foreach ($categories as $cat): ?>
             <a href="index.php?cat_id=<?= $cat['categorie_restaurant_id'] ?>" 
-               class="btn-filtre <?= $cat_id == $cat['categorie_restaurant_id'] ? 'actif' : '' ?>">
+               class="btn-filtre <?= $current_cat == $cat['categorie_restaurant_id'] ? 'actif' : '' ?>">
                 <?= htmlspecialchars($cat['nom']) ?>
             </a>
         <?php endforeach; ?>
     </div>
 
     <h2 class="section-title">
-    <?= ($current_cat && $stmt_cat) 
-        ? "Restaurants sélectionnés : " . htmlspecialchars($stmt_cat->fetch(PDO::FETCH_ASSOC)['nom']) 
-        : "Nos Restaurants Partenaires 🍽️" 
-    ?>
-</h2>
+        <?php
+        if (isset($titre_special)) {
+            // Cas GPS
+            echo htmlspecialchars($titre_special);
+        } 
+        elseif ($stmt_cat && $row_cat = $stmt_cat->fetch(PDO::FETCH_ASSOC)) {
+            // Cas Catégorie
+            echo "Restaurants : " . htmlspecialchars($row_cat['nom']);
+        } 
+        else {
+            // Cas par défaut
+            echo "Nos Restaurants Partenaires 🍽️";
+        }
+        ?>
+    </h2>
 
     <div class="restaurant-grid">
         <?php
         if ($stmt->rowCount() > 0) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                // Extraction sécurisée
                 $id = $row['restaurant_id'];
                 $nom = htmlspecialchars($row['nom']);
                 $adresse = htmlspecialchars($row['adresse']);
                 
-                // --- MODIFICATION ICI ---
-                // 1. On ouvre avec un <a> qui englobe tout
-                echo "<a href='menu.php?id={$id}' class='restaurant-card'>";
-                
-                    // 2. Le titre devient un simple span (car on est déjà dans un lien)
-                    echo "<span class='card-title'>{$nom}</span>";
+                echo "<div class='restaurant-card'>";
+                    // Titre cliquable
+                    echo "<a href='menu.php?id={$id}' class='card-title'>{$nom}</a>";
                     
+                    // Affichage distance (Si mode GPS)
+                    if (isset($row['distance_km'])) {
+                        $dist = number_format($row['distance_km'], 2); 
+                        echo "<span class='distance-badge'>🏃 à {$dist} km</span>";
+                    }
+
                     echo "<p class='card-address'>📍 {$adresse}</p>";
-                    
-                // 3. On ferme le lien
-                echo "</a>";
+                echo "</div>";
             }
         } else {
-            // Affichage si vide
+            // Message si aucun résultat
             echo "<div style='grid-column: 1 / -1; padding: 40px; background:white; border-radius:12px; text-align:center;'>";
-            echo "<p style='font-size:1.2rem; color:#7f8c8d;'>Aucun restaurant trouvé pour cette catégorie. 😔</p>";
+            echo "<p style='font-size:1.2rem; color:#7f8c8d;'>Aucun restaurant trouvé pour cette recherche. 😔</p>";
             echo "<a href='index.php' style='color:var(--accent-color); font-weight:bold; text-decoration:none;'>Retourner à la liste complète</a>";
             echo "</div>";
         }
@@ -241,6 +285,41 @@
     </div>
 
 </div>
+
+<script>
+    function getLocation() {
+        if (navigator.geolocation) {
+            // Demande la position
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            alert("La géolocalisation n'est pas supportée par ce navigateur.");
+        }
+    }
+
+    function showPosition(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        // Redirection propre en GET
+        window.location.href = "index.php?action=geo&lat=" + lat + "&lon=" + lon;
+    }
+
+    function showError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                alert("Vous avez refusé la géolocalisation. Impossible de trouver les restaurants proches.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                alert("Les informations de localisation sont indisponibles.");
+                break;
+            case error.TIMEOUT:
+                alert("La demande de localisation a expiré.");
+                break;
+            default:
+                alert("Une erreur inconnue est survenue.");
+        }
+    }
+</script>
 
 </body>
 </html>
