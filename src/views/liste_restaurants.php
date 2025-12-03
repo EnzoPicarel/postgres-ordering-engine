@@ -145,6 +145,23 @@
             color: inherit;        /* Garde la couleur noire */
         }
 
+        /* Supprimer le soulignement par défaut des liens de la carte */
+        .card-link-wrapper {
+            text-decoration: none !important;
+            color: inherit;
+            display: block; 
+        }
+
+        .card-link-wrapper:hover .card-address {
+            text-decoration: underline;
+            color: var(--primary-color);
+        }
+
+        .card-link-wrapper:hover .card-title {
+            text-decoration: none;
+            color: var(--accent-color); 
+        }
+
         .restaurant-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--hover-shadow);
@@ -182,6 +199,40 @@
             padding: 4px 8px;
             border-radius: 4px;
             width: fit-content;
+        }
+        /* Étoiles de notation */
+        .stars { color: #f1c40f; font-size: 1.1em; letter-spacing: 2px; }
+        .stars-empty { color: #ccc; }
+
+        /* Bouton discret "Crayon" */
+        .btn-avis {
+            text-decoration: none;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            display: inline-flex; justify-content: center; align-items: center;
+            transition: all 0.2s;
+        }
+        .btn-avis:hover { background: #3498db; color: white; border-color: #3498db; }
+
+        /* LA MODAL (Fenêtre cachée) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            display: none; /* Caché par défaut */
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 10px; width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative;
+        }
+        .close-modal {
+            position: absolute; top: 10px; right: 15px; font-size: 1.5rem;
+            cursor: pointer; color: #999;
         }
     </style>
 </head>
@@ -269,21 +320,44 @@
                 $nom = htmlspecialchars($row['nom']);
                 $adresse = htmlspecialchars($row['adresse']);
                 
-                // --- CHANGEMENT ICI : On ouvre le lien sur toute la carte ---
-                echo "<a href='menu.php?id={$id}' class='restaurant-card'>";
-                
-                    // Le titre n'est plus un lien, mais un simple span/div
-                    echo "<span class='card-title'>{$nom}</span>";
-                    
-                    // Affichage distance (Le code GPS de votre collègue)
-                    if (isset($row['distance_km'])) {
-                        $dist = number_format($row['distance_km'], 2); 
-                        echo "<span class='distance-badge'>🏃 à {$dist} km</span>";
-                    }
+                $note = isset($row['note_moyenne']) ? $row['note_moyenne'] : 0;
+                $nb_avis = isset($row['nb_avis']) ? $row['nb_avis'] : 0;
 
-                    echo "<p class='card-address'>📍 {$adresse}</p>";
+                echo "<div class='restaurant-card'>";
                     
-                echo "</a>"; // On ferme le lien
+                    echo "<div style='display:flex; justify-content:space-between; align-items:start; margin-bottom:10px;'>";
+                        
+                        echo "<a href='menu.php?id={$id}' class='card-link-wrapper' style='flex-grow:1;'>";
+                            echo "<span class='card-title'>{$nom}</span>";
+                            
+                            echo "<div style='margin-top:4px;'>";
+                            echo "<span class='stars'>";
+                            for($i=1; $i<=5; $i++) {
+                                echo ($i <= round($note)) ? "★" : "<span class='stars-empty'>☆</span>";
+                            }
+                            echo "</span>";
+                            echo "<span style='font-weight:bold; color:#2c3e50; margin-left:8px;'>" . number_format($note, 1) . " / 5</span>";
+                            echo "<span style='font-size:0.8rem; color:#999; margin-left:5px;'>(" . $nb_avis . ")</span>";
+                            echo "</div>";
+                        echo "</a>";
+
+                        if ($est_connecte) {
+                            echo "<button class='btn-avis' onclick='openAvisModal($id, \"" . addslashes($nom) . "\")' title='Laisser un avis'>✎</button>";
+                        }
+
+                    echo "</div>";
+
+                    echo "<a href='menu.php?id={$id}' class='card-link-wrapper'>";
+                        
+                        if (isset($row['distance_km'])) {
+                            $dist = number_format($row['distance_km'], 2); 
+                            echo "<span class='distance-badge'>🏃 à {$dist} km</span>";
+                        }
+
+                        echo "<p class='card-address'>📍 {$adresse}</p>";
+                    echo "</a>";
+
+                echo "</div>"; // Fin restaurant-card
             }
         } else {
             echo "<div style='grid-column: 1 / -1; padding: 40px; background:white; border-radius:12px; text-align:center;'>";
@@ -293,7 +367,35 @@
         }
         ?>
     </div>
+</div>
+    <div id="modalAvis" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAvisModal()">&times;</span>
+            <h3 id="modalRestoName">Noter ce restaurant</h3>
+            
+            <form action="ajout_avis.php" method="POST">
+                <input type="hidden" name="restaurant_id" id="modalRestoId">
+                
+                <div style="margin-bottom:15px;">
+                    <label>Votre note :</label>
+                    <select name="note" style="width:100%; padding:8px;">
+                        <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                        <option value="4">⭐⭐⭐⭐ (Très bon)</option>
+                        <option value="3">⭐⭐⭐ (Correct)</option>
+                        <option value="2">⭐⭐ (Moyen)</option>
+                        <option value="1">⭐ (Mauvais)</option>
+                    </select>
+                </div>
 
+                <div style="margin-bottom:15px;">
+                    <label>Votre commentaire :</label>
+                    <textarea name="contenu" rows="4" style="width:100%; padding:8px;" placeholder="C'était délicieux..." required></textarea>
+                </div>
+
+                <button type="submit" style="width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer;">Publier l'avis</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -325,6 +427,26 @@
                 break;
             default:
                 alert("Erreur inconnue.");
+        }
+    }
+
+    //ouvre une petite fenêtre pour noter le restaurant
+
+    function openAvisModal(id, nom) {
+        document.getElementById('modalRestoId').value = id;
+        document.getElementById('modalRestoName').innerText = "Noter : " + nom;
+        document.getElementById('modalAvis').style.display = 'flex';
+    }
+
+    function closeAvisModal() {
+        document.getElementById('modalAvis').style.display = 'none';
+    }
+
+    // fermer si on clique dehors
+    window.onclick = function(event) {
+        var modal = document.getElementById('modalAvis');
+        if (event.target == modal) {
+            modal.style.display = "none";
         }
     }
 </script>

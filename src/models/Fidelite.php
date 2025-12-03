@@ -54,5 +54,62 @@ class Fidelite {
             return 0;
         }
     }
+
+    public function ajouterAvis($client_id, $restaurant_id, $note, $contenu) {
+        try {
+            $this->conn->beginTransaction();
+
+            // 1. Vérifier si le client a déjà une fidélité
+            $queryCheck = Query::loadQuery('sql_requests/checkFidelite.sql');
+            $stmtCheck = $this->conn->prepare($queryCheck);
+            $stmtCheck->bindParam(1, $client_id);
+            $stmtCheck->bindParam(2, $restaurant_id);
+            $stmtCheck->execute();
+            
+            // On tente de récupérer la ligne
+            $row = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+            $fid_id = null;
+
+            if ($row) {
+                // Si elle existe, on prend l'ID
+                $fid_id = $row['fidelite_id'];
+            } else {
+                // 2. Si pas de fidélité, on la crée (0 points au départ)
+                // IMPORTANT : createFidelite.sql DOIT contenir "RETURNING fidelite_id"
+                $points = 0;
+                $queryCreate = Query::loadQuery('sql_requests/createFidelite.sql');
+                $stmtCreate = $this->conn->prepare($queryCreate);
+                $stmtCreate->bindParam(1, $client_id);
+                $stmtCreate->bindParam(2, $restaurant_id);
+                $stmtCreate->bindParam(3, $points);
+                $stmtCreate->execute();
+                
+                // On récupère l'ID fraîchement créé
+                $fid_id = $stmtCreate->fetchColumn();
+            }
+
+            if (!$fid_id) {
+                throw new Exception("Impossible de récupérer l'ID fidélité.");
+            }
+
+            // 3. Insérer le commentaire avec le bon ID
+            $queryCommentaire = Query::loadQuery('sql_requests/addCommentaire.sql');
+            $stmt_com = $this->conn->prepare($queryCommentaire);
+            // L'ordre des paramètres dépend de votre SQL (Contenu, Note, ID)
+            $stmt_com->execute([$contenu, $note, $fid_id]);
+
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            // Mode DEBUG (À retirer en production)
+            echo "<pre>";
+            echo "<h1>ERREUR SQL DÉTECTÉE</h1>";
+            echo "<strong>Message : </strong>" . $e->getMessage() . "<br>";
+            echo "</pre>";
+            die();
+        }
+    }
 }
 ?>

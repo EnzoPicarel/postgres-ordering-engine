@@ -7,7 +7,9 @@ CREATE TABLE restaurants
     adresse VARCHAR(255) NOT NULL,
     coordonnees_gps geography(POINT, 4326) NOT NULL,
     restaurant_email VARCHAR(255) NOT NULL UNIQUE,
-    mot_de_passe VARCHAR(255)
+    mot_de_passe VARCHAR(255),
+    note_moyenne DECIMAL(3,1) DEFAULT 0,
+    nb_avis INT DEFAULT 0
 );
 
 CREATE INDEX idx_restaurants_coords ON restaurants USING GIST (coordonnees_gps);
@@ -103,7 +105,7 @@ CREATE TABLE clients
 CREATE TABLE fidelite
 (
     fidelite_id SERIAL PRIMARY KEY,
-    points INT NOT NULL DEFAULT 0,
+    points INT DEFAULT 0,
     client_id INT REFERENCES clients(client_id) ON DELETE CASCADE,
     restaurant_id INT REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
 );
@@ -356,6 +358,45 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION update_note_restaurant() RETURNS TRIGGER AS $$
+DECLARE
+    target_fidelite_id INT;
+    target_restaurant_id INT;
+BEGIN
+    -- id ligne concerné
+    IF (TG_OP = 'DELETE') THEN
+        target_fidelite_id := OLD.fidelite_id;
+    ELSE
+        target_fidelite_id := NEW.fidelite_id;
+    END IF;
+
+    -- id restaurant associé à la fidelité concerné
+    SELECT restaurant_id INTO target_restaurant_id 
+    FROM fidelite 
+    WHERE fidelite_id = target_fidelite_id;
+
+    -- calcule moyenne et nombre d'avis pour le resto
+    UPDATE restaurants
+    SET 
+        note_moyenne = (
+            SELECT COALESCE(ROUND(AVG(c.note), 1), 0)
+            FROM commentaires c
+            JOIN fidelite f ON c.fidelite_id = f.fidelite_id
+            WHERE f.restaurant_id = target_restaurant_id
+        ),
+        nb_avis = (
+            SELECT COUNT(c.commentaire_id)
+            FROM commentaires c
+            JOIN fidelite f ON c.fidelite_id = f.fidelite_id
+            WHERE f.restaurant_id = target_restaurant_id
+        )
+    WHERE restaurant_id = target_restaurant_id;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
 -- TRIGGERS
 
 -- Trigger sur les items 
@@ -371,3 +412,11 @@ CREATE TRIGGER trg_update_prix_formules
 AFTER INSERT OR UPDATE OR DELETE ON contenir_formules
 FOR EACH ROW
 EXECUTE FUNCTION update_prix_commande_func();
+
+
+-- Trigger sur les commentaires
+DROP TRIGGER IF EXISTS trg_calcul_note ON commentaires;
+CREATE TRIGGER trg_calcul_note
+AFTER INSERT OR UPDATE OR DELETE ON commentaires
+FOR EACH ROW
+EXECUTE FUNCTION update_note_restaurant();
