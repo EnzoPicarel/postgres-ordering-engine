@@ -479,26 +479,26 @@ INSERT INTO composer_formules (formule_id, categorie_item_id) VALUES
 (5, 4);
 
 
-INSERT INTO conditions_formules (jour_disponibilite, creneau_horaire) VALUES
+INSERT INTO conditions_formules (jour_disponibilite, creneau_horaire_debut, creneau_horaire_fin) VALUES
 -- Service du Midi (Lundi - Vendredi)
-(1, '12:00:00'), -- ID 1 (Lundi Midi)
-(2, '12:00:00'), -- ID 2 (Mardi Midi)
-(3, '12:00:00'), -- ID 3 (Mercredi Midi)
-(4, '12:00:00'), -- ID 4 (Jeudi Midi)
-(5, '12:00:00'), -- ID 5 (Vendredi Midi)
+(1, '12:00:00', '14:30:00'), -- ID 1 (Lundi Midi)
+(2, '12:00:00', '14:30:00'), -- ID 2 (Mardi Midi)
+(3, '12:00:00', '14:30:00'), -- ID 3 (Mercredi Midi)
+(4, '12:00:00', '14:30:00'), -- ID 4 (Jeudi Midi)
+(5, '12:00:00','14:30:00'), -- ID 5 (Vendredi Midi)
 
 -- Service du Soir (Lundi - Jeudi)
-(1, '19:00:00'), -- ID 6 (Lundi Soir)
-(2, '19:00:00'), -- ID 7 (Mardi Soir)
-(3, '19:00:00'), -- ID 8 (Mercredi Soir)
-(4, '19:00:00'), -- ID 9 (Jeudi Soir)
+(1, '19:00:00', '22:00:00'), -- ID 6 (Lundi Soir)
+(2, '19:00:00', '22:00:00'), -- ID 7 (Mardi Soir)
+(3, '19:00:00', '22:00:00'), -- ID 8 (Mercredi Soir)
+(4, '19:00:00', '22:00:00'), -- ID 9 (Jeudi Soir)
 
 -- Service du Matin (Mardi - Samedi, pour la boulangerie)
-(2, '07:00:00'), -- ID 10 (Mardi Matin)
-(3, '07:00:00'), -- ID 11 (Mercredi Matin)
-(4, '07:00:00'), -- ID 12 (Jeudi Matin)
-(5, '07:00:00'), -- ID 13 (Vendredi Matin)
-(6, '07:00:00'); -- ID 14 (Samedi Matin)
+(2, '07:00:00', '12:00:00'), -- ID 10 (Mardi Matin)
+(3, '07:00:00', '12:00:00'), -- ID 11 (Mercredi Matin)
+(4, '07:00:00', '12:00:00'), -- ID 12 (Jeudi Matin)
+(5, '07:00:00', '12:00:00'), -- ID 13 (Vendredi Matin)
+(6, '07:00:00', '12:00:00'); -- ID 14 (Samedi Matin)
 
 
 INSERT INTO avoir_conditions_formules (formule_id, condition_formule_id) VALUES

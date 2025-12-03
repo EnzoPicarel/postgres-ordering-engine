@@ -136,7 +136,8 @@ CREATE TABLE conditions_formules
 (
     condition_formule_id SERIAL PRIMARY KEY,
     jour_disponibilite INT NOT NULL,
-    creneau_horaire TIME NOT NULL
+    creneau_horaire_debut TIME NOT NULL,
+    creneau_horaire_fin TIME NOT NULL
 );
 
 CREATE TABLE avoir_conditions_formules
