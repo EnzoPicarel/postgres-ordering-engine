@@ -326,6 +326,36 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION supprimer_au_panier(
+    p_commande_id INT, 
+    p_item_id INT
+) RETURNS BOOLEAN AS $$
+DECLARE
+    v_quantite INT;
+BEGIN
+
+    SELECT quantite INTO v_quantite 
+    FROM contenir_items 
+    WHERE commande_id = p_commande_id AND item_id = p_item_id;
+
+    -- 2. Si l'item n'existe pas, on arrête
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF;
+
+    IF v_quantite > 1 THEN
+        UPDATE contenir_items SET quantite = quantite - 1 
+        WHERE commande_id = p_commande_id AND item_id = p_item_id;
+    ELSE
+        DELETE FROM contenir_items 
+        WHERE commande_id = p_commande_id AND item_id = p_item_id;
+    END IF;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
 -- TRIGGERS
 
 -- Trigger sur les items 
