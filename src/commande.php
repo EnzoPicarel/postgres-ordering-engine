@@ -7,6 +7,7 @@ session_start();
 
 require_once './config/Database.php';
 require_once './models/Commandes.php';
+require_once './models/Fidelite.php';
 
 // Exiger une session active, ignorer tout paramètre GET
 if (isset($_SESSION['client_id']) && is_numeric($_SESSION['client_id'])) {
@@ -19,7 +20,7 @@ if (isset($_SESSION['client_id']) && is_numeric($_SESSION['client_id'])) {
 $database = new Database();
 $db = $database->getConnection();
 $commande = new Commande($db);
-
+$fidelite = new Fidelite($db);
 $stmt = $commande->getCurrentCommande($client_id);
 
 $stmt_items = null;
@@ -30,6 +31,10 @@ $stmt_items = null;
 if ($stmt->rowCount() > 0) {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $id_cmd = $row['commande_id'];
+
+        //ajout fidélité
+        $row['solde_points_actuel'] = $fidelite->getSolde($client_id, $row['restaurant_id']);
+        $row['points_gagnes_commande'] = floor($row['prix_total_remise']);
 
         // --- 1. Gestion des Articles ---
         $stmt_items = $commande->afficherItemCommande($id_cmd);

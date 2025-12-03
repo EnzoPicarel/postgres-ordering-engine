@@ -141,6 +141,28 @@
             border-radius: 20px;
         }
 
+        /* fidélité*/
+        .loyalty-section{
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .loyalty-info h4 {margin:0; color: #15803d; font-size: 1.1rem;}
+        .loyalty-info p {margin:5px 0 0 0; color: #166534; font-size: 0.9rem;}
+        .loyalty-badge {
+            background-color: #16a34a;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
         /* Sections internes */
         h3 {
             font-size: 1.1rem;
@@ -311,6 +333,9 @@
             $dateCmd = new DateTime($commande['date_commande']);
             $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
+            $points_gagnes = isset($commande['points_gagnes_commande']) ? intval($commande['points_gagnes_commande']) : 0;
+            $solde_actuel = isset($commande['solde_points_actuel']) ? intval($commande['solde_points_actuel']) : 0;
+
             echo "<div class='commande-card'>";
                 
                 // HEADER COMMANDE
@@ -366,12 +391,25 @@
                         echo "</tbody></table>";
                     }
 
+                    //FIDELITE
+                    echo "<div class='loyalty-section'>";
+                        echo "<div class='loyalty-info'>";
+                            echo "<h4>🎁 Programme Fidélité</h4>";
+                            echo "<p>Solde actuel : <strong>{$solde_actuel} pts</strong></p>";
+                            echo "<p style='font-size:0.85em; color:#666;'>Nouveau solde après validation : " . ($solde_actuel + $points_gagnes) . " pts</p>";
+                        echo "</div>";
+                        echo "<div class='loyalty-badge'>+{$points_gagnes} pts</div>";
+                    echo "</div>";
+
                     // 3. TOTAL
                     echo "<div class='total-section'>";
                         echo "<span style='font-size:1.1rem; color:#6c757d;'>Total à payer :</span>";
                         echo "<span class='total-price'>" . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €</span>";
                     echo "</div>";
 
+              
+
+                    
                     // 4. ACTIONS
                     echo "<div class='actions-group'>";
                         
@@ -381,9 +419,18 @@
                         echo "<button type='submit' class='btn-annuler'>🗑️ Annuler</button>";
                         echo "</form>";
 
-                        // Confirmer
+                        // --- MODIFICATION ICI : CONFIRMER ---
                         echo "<form action='confirmer_commande.php' method='POST'>";
                         echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
+                        
+                        // LES CHAMPS CACHÉS INDISPENSABLES POUR LA FIDÉLITÉ
+                        $resto_id = isset($commande['restaurant_id']) ? $commande['restaurant_id'] : 0;
+                        $client_id = isset($_SESSION['client_id']) ? $_SESSION['client_id'] : 0;
+                        $total = isset($commande['prix_total_remise']) ? $commande['prix_total_remise'] : 0;
+                        echo "<input type='hidden' name='restaurant_id' value='" . $resto_id . "'>";
+                        echo "<input type='hidden' name='client_id' value='" . $client_id . "'>";
+                        echo "<input type='hidden' name='total' value='" . $total . "'>";
+                        
                         echo "<button type='submit' class='btn-confirmer'>✅ Valider et Payer</button>";
                         echo "</form>";
                     
