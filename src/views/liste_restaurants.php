@@ -213,6 +213,10 @@
                     <a href="historique.php" style="color:var(--primary-color);">📋 Historique</a>
                 <?php endif; ?>
 
+                <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true): ?>
+                    <a href="statistiques.php" style="background:#2c3e50; color:white; padding:8px 12px; border-radius:6px;">📊 Statistiques</a>
+                <?php endif; ?>
+
                 <a href="logout.php" style="color: #e74c3c;">Se déconnecter</a>
             </div>
 

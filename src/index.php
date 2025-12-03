@@ -17,10 +17,11 @@ if (isset($_SESSION['client_id'])) {
     $est_connecte = true;
     $current_client_id = $_SESSION['client_id'];
     $nom_client = $_SESSION['client_nom'];
-}
-else {
+} else {
     $current_client_id = null;
 }
+
+$is_admin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 
 $restaurant = new Restaurant($db);
 
@@ -35,14 +36,14 @@ $current_cat_info = null;
 
 if ($lat && $lon) {
     $stmt = $restaurant->getRestaurantsAround($lat, $lon, 3); // Rayon de 3km
-    $current_cat = null; 
+    $current_cat = null;
     $titre_special = "Restaurants autour de vous (3km) 📍";
 
 } elseif (isset($current_cat)) {
     $stmt = $restaurant->getByCategory($current_cat);
-    
+
     $stmt_cat = $restaurant->getCategoriesById($current_cat);
-    
+
 } else {
     $stmt = $restaurant->getAllRestaurants();
 }
