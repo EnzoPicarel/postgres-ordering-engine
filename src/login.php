@@ -3,7 +3,7 @@
 
 // Utilisation des sessions au lieu de passer l'id dans l'url, bcp plus sécurisé, permet de ne pas changer de compte en modifiant l'utilisateur dans l'url.
 
-session_start(); 
+session_start();
 
 /*
 session_start() doit être la toute première instruction php, à mettre surtout avant tout code html
@@ -28,15 +28,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $database = new Database();
         $db = $database->getConnection();
         $clientModel = new Client($db);
-        
+
         $result = $clientModel->getIdByLogin($nom, $email);
 
         if ($result) {
             $_SESSION['client_id'] = $result['client_id'];
             $_SESSION['client_nom'] = $nom;
+            $_SESSION['is_admin'] = ($email === 'admin@email.fr');
 
             header("Location: index.php");
-            exit(); 
+            exit();
 
         } else {
             $error_message = "Identifiants incorrects.";
