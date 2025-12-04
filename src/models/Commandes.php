@@ -1,6 +1,7 @@
 <?php
 
 require_once 'Query.php';
+require_once 'Fidelite.php';
 
 class Commande
 {
@@ -87,14 +88,21 @@ class Commande
         return $stmt->execute();
     }
 
-    public function confirmOrder($commande_id)
+    public function confirmOrder($commande_id, $client_id, $restaurant_id, $prix_total, $accorder_points = true)
     {
         $query = Query::loadQuery('sql_requests/confirmOrder.sql');
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $commande_id);
 
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            if ($accorder_points) {
+                $fidelite = new Fidelite($this->conn);
+                $fidelite->ajouterPoints($client_id, $restaurant_id, $prix_total);
+            }
+            return true;
+        }
+        return false;
     }
 
     public function getHistoriqueCommandes($client_id)

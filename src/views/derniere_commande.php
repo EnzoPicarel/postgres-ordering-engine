@@ -162,6 +162,27 @@
             font-weight: bold;
             font-size: 1.2rem;
         }
+        .loyalty-section.loyalty-guest { 
+            background-color: #fff7ed; /* Orange très pâle */
+            border-color: #fed7aa;     /* Bordure orange */
+        }
+        .loyalty-section.loyalty-guest h4 { color: #ea580c; } /* Titre orange vif */
+        .loyalty-section.loyalty-guest p { color: #c2410c; }  /* Texte orange foncé */
+        
+        .loyalty-section.loyalty-guest a { 
+            color: #ea580c; 
+            text-decoration: underline; 
+            font-weight: 700; 
+            display: inline-block; 
+            margin-top: 5px; 
+            font-size: 0.9rem; 
+        }
+        
+        .loyalty-section.loyalty-guest .loyalty-badge { 
+            background-color: #f97316; /* Badge orange */
+            color: white; 
+            opacity: 0.9; 
+        }
 
         /* Sections internes */
         h3 {
@@ -333,8 +354,12 @@
             $dateCmd = new DateTime($commande['date_commande']);
             $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
-            $points_gagnes = isset($commande['points_gagnes_commande']) ? intval($commande['points_gagnes_commande']) : 0;
+            $is_guest = isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true;
+            $prix_total = $commande['prix_total_remise'] ?? 0;
+            $points_potentiels = intval(floor($prix_total));
+
             $solde_actuel = isset($commande['solde_points_actuel']) ? intval($commande['solde_points_actuel']) : 0;
+            $points_gagnes = $is_guest ? 0 : $points_potentiels;
 
             echo "<div class='commande-card'>";
                 
@@ -392,24 +417,33 @@
                     }
 
                     //FIDELITE
-                    echo "<div class='loyalty-section'>";
-                        echo "<div class='loyalty-info'>";
-                            echo "<h4>🎁 Programme Fidélité</h4>";
-                            echo "<p>Solde actuel : <strong>{$solde_actuel} pts</strong></p>";
-                            echo "<p style='font-size:0.85em; color:#666;'>Nouveau solde après validation : " . ($solde_actuel + $points_gagnes) . " pts</p>";
+                    if (!$is_guest) {
+                        echo "<div class='loyalty-section'>";
+                            echo "<div class='loyalty-info'>";
+                                echo "<h4>🎁 Programme Fidélité</h4>";
+                                echo "<p>Solde actuel : <strong>{$solde_actuel} pts</strong></p>";
+                                echo "<p style='font-size:0.85em; color:#666;'>Nouveau solde après validation : " . ($solde_actuel + $points_gagnes) . " pts</p>";
+                            echo "</div>";
+                            echo "<div class='loyalty-badge'>+{$points_gagnes} pts</div>";
                         echo "</div>";
-                        echo "<div class='loyalty-badge'>+{$points_gagnes} pts</div>";
-                    echo "</div>";
+                    } else {
+                        // INVITÉ : Affichage de la promo (Upsell)
+                        echo "<div class='loyalty-section loyalty-guest'>";
+                            echo "<div class='loyalty-info'>";
+                                echo "<h4>🌟 Ne passez pas à côté !</h4>";
+                                echo "<p>Cette commande pourrait vous rapporter <strong>{$points_potentiels} points</strong> de fidélité.</p>";
+                                echo "<a href='create_account.php'>Créez un compte pour en profiter !</a>";
+                            echo "</div>";
+                            echo "<div class='loyalty-badge'>0 pts</div>";
+                        echo "</div>";
+                    }
 
                     // 3. TOTAL
-                    echo "<div class='total-section'>";
-                        echo "<span style='font-size:1.1rem; color:#6c757d;'>Total à payer :</span>";
-                        echo "<span class='total-price'>" . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €</span>";
-                    echo "</div>";
+                        echo "<div class='total-section'>";
+                            echo "<span style='font-size:1.1rem; color:#6c757d;'>Total à payer :</span>";
+                            echo "<span class='total-price'>" . number_format($commande['prix_total_remise'], 2, ',', ' ') . " €</span>";
+                        echo "</div>";
 
-              
-
-                    
                     // 4. ACTIONS
                     echo "<div class='actions-group'>";
                         
