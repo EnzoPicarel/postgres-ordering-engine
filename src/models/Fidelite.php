@@ -57,6 +57,32 @@ class Fidelite
         }
     }
 
+    public function getRemisesDisponibles($restaurant_id, $solde_points)
+    {        
+        $query = Query::loadQuery('sql_requests/getRemisesDisponibles.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':restaurant_id', $restaurant_id);
+        $stmt->bindParam(':solde_points', $solde_points);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function utiliserPoints($client_id, $restaurant_id, $cout_points)
+    {
+        $cout = intval($cout_points);
+        if ($cout <= 0) return true;
+
+        $sql = "UPDATE fidelite SET points = points - ? WHERE client_id = ? AND restaurant_id = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(1, $cout, PDO::PARAM_INT);
+        $stmt->bindParam(2, $client_id, PDO::PARAM_INT);
+        $stmt->bindParam(3, $restaurant_id, PDO::PARAM_INT);
+        
+        return $stmt->execute();
+    }
+
     public function ajouterAvis($client_id, $restaurant_id, $note, $contenu)
     {
         try {
