@@ -674,3 +674,25 @@ INSERT INTO item_offert (remise_id, item_id, quantite) VALUES
 (2, 7, 1),  -- 1 Tiramisu (Item 7)
 (3, 10, 1), -- 1 Portion de Nems (Item 10)
 (6, 23, 1); -- 1 Plateau de Fromages (Item 23)
+
+
+-- COMPLEMENTS (Toppings, Sauces, Sides)
+-- Item 2 (Coq au vin) can have sauce complements
+INSERT INTO etre_accompagne_de (item_id1, item_id2) VALUES
+(2, 9),  -- Coq au vin → Supplément Sauce Piquante
+(6, 9),  -- Pizza Margherita → Supplément Sauce Piquante
+
+-- Item 10 (Nems) can have dipping sauce
+(10, 12), -- Nems → Riz gluant (as a side/dip)
+
+-- Item 11 (Bo Bun Spécial) can have sauce complement
+(11, 12), -- Bo Bun Spécial → Riz gluant
+
+-- Item 18 (Langoustines) can have sauce complement
+(18, 9),  -- Langoustines → Supplément Sauce Piquante
+
+-- Item 19 (Poularde de Bresse) can have sauce
+(19, 9),  -- Poularde de Bresse → Supplément Sauce Piquante
+
+-- Item 21 (Plateau de Fromages) as a dessert complement option
+(20, 23); -- Langoustines → Plateau de Fromages (wine pairing option)
