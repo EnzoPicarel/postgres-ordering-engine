@@ -243,7 +243,6 @@
                             if ($montant_reduction > 0) {
                                 echo "<div style='margin-top:15px; padding:10px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; color:#856404;'>";
                                     echo "<strong>✅ Récompense active :</strong> -" . number_format($montant_reduction, 2) . " €";
-                                    // Lien pour annuler (recharge la page sans parametre)
                                     echo " <a href='commande.php' style='float:right; color:#856404; text-decoration:underline;'>Annuler</a>";
                                 echo "</div>";
                             }
@@ -286,11 +285,8 @@
                         echo "<button type='submit' class='btn-annuler'>🗑️ Annuler</button>";
                         echo "</form>";
 
-                        // CONFIRMER
                         echo "<form action='confirmer_commande.php' method='POST'>";
                         echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
-                        
-                        // CHAMPS CACHÉS (Mis à jour avec les valeurs finales et le coût en points)
                         $resto_id = isset($commande['restaurant_id']) ? $commande['restaurant_id'] : 0;
                         $client_id = isset($_SESSION['client_id']) ? $_SESSION['client_id'] : 0;
                         
