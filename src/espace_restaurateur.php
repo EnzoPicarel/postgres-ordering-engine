@@ -6,8 +6,9 @@ error_reporting(E_ALL);
 
 require_once './config/Database.php';
 require_once './models/Restaurants.php';
-require_once './models/Plats.php'; // Pour l'ajout de plats
+require_once './models/Plats.php';
 require_once './models/Formules.php';
+require_once './models/Complements.php';
 
 // 1. SÉCURITÉ : Vérification de l'accès
 if (!isset($_SESSION['restaurant_id'])) {
@@ -36,17 +37,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     // Gestion de la disponibilité (Checkbox)
     $dispo = isset($_POST['disponible']) ? 'TRUE' : 'FALSE';
+    $complements_ids = isset($_POST['complements']) ? $_POST['complements'] : [];
 
     if (!empty($nom) && $prix > 0) {
         
-        
-        if ($item->addItem($nom, $prix, $dispo, $restaurant_id, $cat_id)) {
-            $message_succes = "Le plat \"$nom\" a été ajouté à la carte !";
+        // 1. On récupère l'ID du nouveau plat
+        $new_item_id = $item->addItem($nom, $prix, $dispo, $restaurant_id, $cat_id);
+
+        if ($new_item_id) {
+            
+            // 2. Si des compléments sont sélectionnés, on les ajoute
+            if (!empty($complements_ids)) {
+                // On a besoin du modèle Complements (assurez-vous de l'avoir inclus en haut)
+                require_once './models/Complements.php'; 
+                $compModel = new Complements($db);
+
+                foreach ($complements_ids as $comp_id) {
+                    $compModel->addComplement($new_item_id, $comp_id);
+                }
+            }
+
+            $message_succes = "Le plat \"$nom\" a été ajouté avec ses compléments !";
         } else {
             $message_erreur = "Erreur lors de l'ajout du plat.";
         }
-    } else {
-        $message_erreur = "Veuillez remplir tous les champs correctement.";
     }
 }
 

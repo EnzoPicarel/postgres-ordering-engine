@@ -466,7 +466,8 @@
                                     'nom' => $row['nom'],
                                     'prix' => $row['prix'],
                                     'item_id' => $row['item_id'],
-                                    'proprietes' => []
+                                    'proprietes' => [],
+                                    'has_complements' => $row['has_complements']
                                 ];
                             }
                             if (!empty($row['nom_propriete'])) {
@@ -526,9 +527,20 @@
                                 echo "</div>"; // Fin plat-actions
                     
                                 // Complements section
-                                echo "<div style='margin-top: 10px; font-size: 0.85rem;'>";
-                                echo "<button class='complement-toggle' data-item-id='" . $plat['item_id'] . "' style='background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; padding: 0; font-size: inherit;'>Voir compléments (sauces, accompagnements)</button>";
-                                echo "</div>";
+                                if ($plat['has_complements'] == 1) {
+                                    echo "<div style='margin-top: 10px; font-size: 0.85rem;'>";
+                                    
+                                    // ATTENTION AUX GUILLEMETS ICI
+                                    // data-item-id doit contenir la valeur PHP
+                                    echo "<button class='complement-toggle' 
+                                            data-item-id='" . $plat['item_id'] . "' 
+                                            data-resto-id='" . $current_resto_id . "' 
+                                            style='background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; padding: 0; font-size: inherit;'>
+                                            Voir compléments ▼
+                                        </button>";
+                                        
+                                    echo "</div>";
+                                }
 
                                 echo "</div>"; // Fin plat-item
                             }
@@ -590,39 +602,62 @@
             document.querySelectorAll('.complement-toggle').forEach(btn => {
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
+                    
+                    // 1. Récupération propre des IDs
                     const itemId = this.dataset.itemId;
+                    const restaurantId = this.dataset.restoId; // On utilise uniquement celui-ci
                     const platItem = this.closest('.plat-item');
 
-                    // Remove existing complement list if visible
+                    // 2. Toggle : fermeture si déjà ouvert
                     const existingList = platItem.querySelector('.complement-list');
                     if (existingList) {
                         existingList.remove();
+                        this.innerHTML = "Voir compléments ▼";
                         return;
                     }
 
-                    // Fetch complements
-                    fetch('getComplements.php?item_id=' + itemId)
+                    // 3. Changement du texte
+                    this.innerHTML = "Masquer compléments ▲";
+
+                    // 4. Appel AJAX
+                    fetch('complements.php?item_id=' + itemId)
                         .then(response => response.json())
                         .then(data => {
                             const list = document.createElement('div');
                             list.className = 'complement-list';
-                            list.style.cssText = 'margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 8px; font-size: 0.9rem;';
+                            list.style.cssText = 'margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem; border-top: 1px dashed #ddd;';
 
                             if (data.length === 0) {
                                 list.innerHTML = '<em style="color: #999;">Pas de compléments disponibles</em>';
                             } else {
-                                let html = '<div style="font-weight: 600; margin-bottom: 8px;">Compléments :</div>';
-                                data.forEach(complement => {
-                                    html += '<div style="padding: 5px 0; border-bottom: 1px solid #ddd;">' +
-                                        htmlEscape(complement.nom) + ' <strong style="float:right;">+' +
-                                        parseFloat(complement.prix).toFixed(2) + '€</strong></div>';
+                                let html = '<div style="font-weight: 600; margin-bottom: 8px; color:#e67e22;">Compléments disponibles :</div>';
+                                
+                                data.forEach(comp => {
+                                    // Construction du HTML complet et valide
+                                    html += `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee;">
+                                        <span>${htmlEscape(comp.nom)} (+${parseFloat(comp.prix).toFixed(2)}€)</span>
+                                        
+                                        <form action="ajouter_item.php" method="POST" style="margin:0;">
+                                            <input type="hidden" name="item_id" value="${comp.item_id}">
+                                            <input type="hidden" name="restaurant_id" value="${restaurantId}">
+                                            
+                                            <button type="submit" class="btn-circle btn-add" 
+                                                    style="width: 28px; height: 28px; font-size: 1rem; border:1px solid #ddd; background:white; cursor:pointer;" 
+                                                    title="Ajouter ce complément">
+                                                +
+                                            </button>
+                                        </form>
+                                    </div>`;
                                 });
                                 list.innerHTML = html;
                             }
-
                             platItem.appendChild(list);
                         })
-                        .catch(err => console.error('Erreur:', err));
+                        .catch(err => {
+                            console.error('Erreur:', err);
+                            alert("Impossible de charger les compléments.");
+                        });
                 });
             });
 

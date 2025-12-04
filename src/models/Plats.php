@@ -37,7 +37,9 @@ class Plat {
         $stmt->bindParam(4, $restaurant_id);
         $stmt->bindParam(5, $categorie_item_id);
 
-        return $stmt->execute();
+        $stmt->execute();
+
+        return $stmt->fetchColumn();
 
 
     }
@@ -48,6 +50,21 @@ class Plat {
         $stmt->execute();
         return $stmt;
     }
+
+    public function searchItem($restaurant_id, $term) {
+        $searchTerm = "%" . $term . "%";
+        
+        $sql = Query::loadQuery("sql_requests/searchItem.sql");
+        
+        $stmt = $this->conn->prepare($sql);
+        
+        $stmt->execute([$restaurant_id, $searchTerm]);
+        
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
+    
 }
 
 ?>

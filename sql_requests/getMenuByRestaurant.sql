@@ -1,6 +1,6 @@
 -- Get complete menu for a restaurant with item properties (vegetarian, gluten-free, etc.)
 
-SELECT i.item_id, i.nom, i.prix, c.nom AS nom_categorie, p.nom AS nom_propriete
+SELECT i.item_id, i.nom, i.prix, c.nom AS nom_categorie, p.nom AS nom_propriete, CASE WHEN EXISTS (SELECT 1 FROM etre_accompagne_de WHERE item_id1 = i.item_id) THEN 1 ELSE 0 END as has_complements
 FROM items AS i
 INNER JOIN categories_items AS c ON c.categorie_item_id = i.categorie_item_id
 LEFT JOIN avoir_proprietes_items AS api ON api.item_id = i.item_id

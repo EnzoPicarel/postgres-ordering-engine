@@ -229,6 +229,20 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label>Compléments (Sauces, etc.) :</label>
+                        
+                        <div style="position:relative;">
+                            <input type="text" id="search-complement" placeholder="Tapez pour chercher un item..." autocomplete="off">
+                            <div id="search-results" style="position:absolute; width:100%; background:white; border:1px solid #ddd; border-top:none; z-index:100; max-height:200px; overflow-y:auto; display:none;"></div>
+                        </div>
+
+                        <div id="selected-complements" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px;">
+                            </div>
+                        
+                        <div id="hidden-inputs"></div>
+                    </div>
+
                     <div class="form-group" style="margin-top:20px;">
                         <label style="display:inline-flex; align-items:center; cursor:pointer;">
                             <input type="checkbox" name="disponible" checked style="width:auto; margin-right:10px;">
@@ -395,6 +409,92 @@
         <?php endif; ?>
         
     </div>
+    <script>
+        const searchInput = document.getElementById('search-complement');
+        const resultsDiv = document.getElementById('search-results');
+        const selectedDiv = document.getElementById('selected-complements');
+        const hiddenDiv = document.getElementById('hidden-inputs');
+        
+        // Liste des IDs déjà sélectionnés pour éviter les doublons
+        let selectedIds = new Set();
+
+        // 1. Écoute de la frappe
+        searchInput.addEventListener('input', function() {
+            const term = this.value;
+            if (term.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            fetch(`api_search_items.php?term=${encodeURIComponent(term)}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.length > 0) {
+                        resultsDiv.style.display = 'block';
+                        data.forEach(item => {
+                            // On n'affiche pas ceux déjà sélectionnés
+                            if (!selectedIds.has(item.item_id)) {
+                                const div = document.createElement('div');
+                                div.style.padding = '8px';
+                                div.style.cursor = 'pointer';
+                                div.style.borderBottom = '1px solid #eee';
+                                div.onmouseover = () => div.style.background = '#f9f9f9';
+                                div.onmouseout = () => div.style.background = 'white';
+                                div.textContent = `${item.nom} (${item.prix}€)`;
+                                
+                                // Clic sur un résultat
+                                div.onclick = () => addItem(item);
+                                resultsDiv.appendChild(div);
+                            }
+                        });
+                    } else {
+                        resultsDiv.style.display = 'none';
+                    }
+                });
+        });
+
+        // 2. Fonction pour ajouter un item à la liste
+        function addItem(item) {
+            selectedIds.add(item.item_id);
+            
+            // Affichage visuel (Badge)
+            const badge = document.createElement('span');
+            badge.style.background = '#e3f2fd';
+            badge.style.color = '#1976d2';
+            badge.style.padding = '5px 10px';
+            badge.style.borderRadius = '15px';
+            badge.style.fontSize = '0.9em';
+            badge.innerHTML = `${item.nom} <span style="cursor:pointer; font-weight:bold; margin-left:5px;" onclick="removeItem(this, ${item.item_id})">&times;</span>`;
+            selectedDiv.appendChild(badge);
+
+            // Ajout du champ caché pour le formulaire POST
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'complements[]';
+            input.value = item.item_id;
+            input.id = `input-comp-${item.item_id}`;
+            hiddenDiv.appendChild(input);
+
+            // Reset recherche
+            searchInput.value = '';
+            resultsDiv.style.display = 'none';
+        }
+
+        // 3. Fonction pour supprimer
+        window.removeItem = function(span, id) {
+            selectedIds.delete(id);
+            span.parentElement.remove(); // Supprime le badge
+            document.getElementById(`input-comp-${id}`).remove(); // Supprime l'input caché
+        };
+
+        // Fermer la liste si on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (e.target !== searchInput) {
+                resultsDiv.style.display = 'none';
+            }
+        });
+    </script>
 
 </body>
 </html>

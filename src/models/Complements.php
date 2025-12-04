@@ -1,5 +1,7 @@
 <?php
 
+require_once 'Query.php';
+
 class Complements
 {
     private $conn;
