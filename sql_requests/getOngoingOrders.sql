@@ -4,6 +4,7 @@ SELECT
     c.commande_id,
     c.date_commande,
     c.heure_retrait,
+    c.est_asap,
     c.prix_total_remise AS prix_total,
     c.etat,
     r.nom AS restaurant_nom,

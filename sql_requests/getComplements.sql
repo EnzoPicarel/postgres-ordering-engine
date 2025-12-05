@@ -3,5 +3,5 @@
 SELECT i.item_id, i.nom, i.prix
 FROM items i
 JOIN etre_accompagne_de ea ON i.item_id = ea.item_id2
-WHERE ea.item_id1 = ?
+WHERE ea.item_id1 = ? AND i.est_disponible = TRUE
 ORDER BY i.nom
