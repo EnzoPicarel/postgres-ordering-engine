@@ -1,3 +1,8 @@
+<?php 
+// Utilise le contrôleur create_account.php
+// Information transmise : nom, email, adresse (par méhode post), bouton submit (active la méthode post côté contrôleur)
+// Information importé : error_message, error_message_mail, $_SESSION, $_POST
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -11,7 +16,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Utiliser min-height pour gérer les petits écrans */
+            min-height: 100vh; 
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
@@ -22,7 +27,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 450px; /* Un peu plus large que le login car plus de champs */
+            max-width: 450px; 
             text-align: center;
         }
         h2 { color: #2c3e50; margin-bottom: 20px; }
@@ -50,7 +55,7 @@
         button {
             width: 100%;
             padding: 12px;
-            background-color: #3498db; /* Bleu pour différencier du vert "Connexion" */
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 4px;
@@ -87,7 +92,8 @@
     <div class="login-container">
         <h2>Créer un compte 📝</h2>
 
-        <?php if (isset($error_message) && !empty($error_message)): ?>
+        <?php 
+        if (isset($error_message) && !empty($error_message)): ?>
             <div class="error-msg">
                 <?= htmlspecialchars($error_message) ?>
             </div>
@@ -105,7 +111,8 @@
             <div class="form-group">
                 <label for="email">Adresse Email :</label>
                 
-                <?php if (isset($error_message_email) && !empty($error_message_email)): ?>
+                <?php 
+                if (isset($error_message_email) && !empty($error_message_email)): ?>
                     <div style="color: #c0392b; font-size: 0.85em; margin-bottom: 5px;">
                         ⚠️ <?= htmlspecialchars($error_message_email) ?>
                     </div>

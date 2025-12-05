@@ -1,3 +1,22 @@
+<?php
+// Contrôleur utilisé : restaurateur_space.php
+// Informations transmises (via POST) :
+// - Action : add_item (nom, prix, categorie_id, disponible, complements[]), 
+//            add_formule (nom, prix, categories[], cond_jour[], cond_debut[], cond_fin[]), 
+//            add_horaire (jour, debut, fin)
+
+// Informations transmises (via GET) :
+// - Action : del_horaire (id)
+// - Page : stats, add_item, formules, horaires (pour la navigation)
+
+// Informations importées :
+// - message_succes, message_erreur
+// - stats (tableau des ventes)
+// - categories_items (liste des catégories pour les formulaires)
+// - liste_horaires (tableau des créneaux d'ouverture)
+// - jours_semaine (mapping ID jour -> Nom jour)
+// - conditions_dispo (liste des conditions existantes pour les formules)
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,7 +28,7 @@
         :root {
             --sidebar-bg: #2c3e50;
             --sidebar-text: #ecf0f1;
-            --accent-color: #3498db; /* Bleu Pro */
+            --accent-color: #3498db;
             --bg-body: #f4f6f9;
             --card-white: #ffffff;
         }
@@ -22,7 +41,6 @@
             background-color: var(--bg-body);
         }
 
-        /* --- SIDEBAR (Gauche) --- */
         .sidebar {
             width: 250px;
             background-color: var(--sidebar-bg);
@@ -64,9 +82,8 @@
         }
         .logout-btn:hover { background: #e74c3c; color: white; }
 
-        /* --- MAIN CONTENT (Droite) --- */
         .main-content {
-            margin-left: 290px; /* Largeur sidebar + padding */
+            margin-left: 290px;
             padding: 40px;
             width: 100%;
         }
@@ -76,7 +93,6 @@
             margin-bottom: 30px;
         }
 
-        /* --- UI ELEMENTS --- */
         .card {
             background: var(--card-white);
             padding: 25px;
@@ -85,12 +101,10 @@
             margin-bottom: 20px;
         }
 
-        /* Messages */
         .alert { padding: 15px; border-radius: 5px; margin-bottom: 20px; }
         .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        /* Formulaire */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
         input[type="text"], input[type="number"], select {
@@ -103,7 +117,6 @@
         }
         button.btn-submit:hover { background-color: #2980b9; }
 
-        /* Tableaux */
         .data-table {
             width: 100%; border-collapse: collapse; margin-top: 10px;
         }
@@ -126,16 +139,16 @@
     <div class="sidebar">
         <h2>👨‍🍳 Espace Pro<br><small style="font-size:0.7em; color:#bdc3c7"><?= htmlspecialchars($restaurant_nom) ?></small></h2>
         
-        <a href="espace_restaurateur.php?page=stats" class="nav-link <?= $page == 'stats' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=stats" class="nav-link <?= $page == 'stats' ? 'active' : '' ?>">
             📊 Statistiques
         </a>
-        <a href="espace_restaurateur.php?page=add_item" class="nav-link <?= $page == 'add_item' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=add_item" class="nav-link <?= $page == 'add_item' ? 'active' : '' ?>">
             ➕ Ajouter un plat
         </a>
-        <a href="espace_restaurateur.php?page=formules" class="nav-link <?= $page == 'formules' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=formules" class="nav-link <?= $page == 'formules' ? 'active' : '' ?>">
             🍱 Gérer les formules
         </a>
-        <a href="espace_restaurateur.php?page=horaires" class="nav-link <?= $page == 'horaires' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=horaires" class="nav-link <?= $page == 'horaires' ? 'active' : '' ?>">
             🕒 Horaires d'ouverture
         </a>
 
@@ -205,7 +218,7 @@
             <h1 class="page-title">Ajouter un nouveau produit</h1>
             
             <div class="card" style="max-width: 600px;">
-                <form method="POST" action="espace_restaurateur.php?page=add_item">
+                <form method="POST" action="restaurateur_space.php?page=add_item">
                     <input type="hidden" name="action" value="add_item">
 
                     <div class="form-group">
@@ -258,7 +271,7 @@
             <h1 class="page-title">Créer un nouveau Menu / Formule</h1>
             
             <div class="card" style="max-width: 600px;">
-                <form method="POST" action="espace_restaurateur.php?page=formules">
+                <form method="POST" action="restaurateur_space.php?page=formules">
                     <input type="hidden" name="action" value="add_formule">
 
                     <div class="form-group">
@@ -299,14 +312,13 @@
                     </div>
 
                     <script>
-                        // Liste des jours pour le select
                         const jours = {1:'Lundi', 2:'Mardi', 3:'Mercredi', 4:'Jeudi', 5:'Vendredi', 6:'Samedi', 7:'Dimanche'};
 
                         function ajouterLigneCondition() {
                             const table = document.getElementById('table-conditions');
                             const row = table.insertRow();
                             
-                            // Cellule Jour
+                            // jour
                             const cell1 = row.insertCell(0);
                             let selectHtml = '<select name="cond_jour[]" style="padding:5px;">';
                             for (const [k, v] of Object.entries(jours)) {
@@ -315,21 +327,18 @@
                             selectHtml += '</select>';
                             cell1.innerHTML = selectHtml;
 
-                            // Cellule Début
+                            // debut
                             const cell2 = row.insertCell(1);
                             cell2.innerHTML = '<input type="time" name="cond_debut[]" required style="padding:5px;">';
 
-                            // Cellule Fin
+                            // fin
                             const cell3 = row.insertCell(2);
                             cell3.innerHTML = '<input type="time" name="cond_fin[]" required style="padding:5px;">';
 
-                            // Cellule Suppression
+                            // suppression
                             const cell4 = row.insertCell(3);
                             cell4.innerHTML = '<button type="button" onclick="this.parentElement.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer;">&times;</button>';
                         }
-                        
-                        // On ajoute une ligne par défaut au chargement (optionnel)
-                        // ajouterLigneCondition(); 
                     </script>
 
                     <button type="submit" class="btn-submit">Créer la formule</button>
@@ -363,7 +372,7 @@
                                     <td><?= substr($h['heure_ouverture'], 0, 5) ?></td>
                                     <td><?= substr($h['heure_fermeture'], 0, 5) ?></td>
                                     <td>
-                                        <a href="espace_restaurateur.php?page=horaires&action=del_horaire&id=<?= $h['horaire_ouverture_id'] ?>" 
+                                        <a href="restaurateur_space.php?page=horaires&action=del_horaire&id=<?= $h['horaire_ouverture_id'] ?>" 
                                            style="color:#e74c3c; text-decoration:none; font-weight:bold;"
                                            onclick="return confirm('Supprimer ce créneau ?');">
                                            🗑️
@@ -378,7 +387,7 @@
 
                 <div class="card" style="flex:1; min-width:300px; height:fit-content;">
                     <h3>Ajouter un créneau</h3>
-                    <form method="POST" action="espace_restaurateur.php?page=horaires">
+                    <form method="POST" action="restaurateur_space.php?page=horaires">
                         <input type="hidden" name="action" value="add_horaire">
 
                         <div class="form-group">
@@ -415,10 +424,8 @@
         const selectedDiv = document.getElementById('selected-complements');
         const hiddenDiv = document.getElementById('hidden-inputs');
         
-        // Liste des IDs déjà sélectionnés pour éviter les doublons
         let selectedIds = new Set();
 
-        // 1. Écoute de la frappe
         searchInput.addEventListener('input', function() {
             const term = this.value;
             if (term.length < 2) {
@@ -433,7 +440,6 @@
                     if (data.length > 0) {
                         resultsDiv.style.display = 'block';
                         data.forEach(item => {
-                            // On n'affiche pas ceux déjà sélectionnés
                             if (!selectedIds.has(item.item_id)) {
                                 const div = document.createElement('div');
                                 div.style.padding = '8px';
@@ -443,7 +449,6 @@
                                 div.onmouseout = () => div.style.background = 'white';
                                 div.textContent = `${item.nom} (${item.prix}€)`;
                                 
-                                // Clic sur un résultat
                                 div.onclick = () => addItem(item);
                                 resultsDiv.appendChild(div);
                             }
@@ -454,11 +459,9 @@
                 });
         });
 
-        // 2. Fonction pour ajouter un item à la liste
         function addItem(item) {
             selectedIds.add(item.item_id);
             
-            // Affichage visuel (Badge)
             const badge = document.createElement('span');
             badge.style.background = '#e3f2fd';
             badge.style.color = '#1976d2';
@@ -468,7 +471,6 @@
             badge.innerHTML = `${item.nom} <span style="cursor:pointer; font-weight:bold; margin-left:5px;" onclick="removeItem(this, ${item.item_id})">&times;</span>`;
             selectedDiv.appendChild(badge);
 
-            // Ajout du champ caché pour le formulaire POST
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'complements[]';
@@ -476,19 +478,16 @@
             input.id = `input-comp-${item.item_id}`;
             hiddenDiv.appendChild(input);
 
-            // Reset recherche
             searchInput.value = '';
             resultsDiv.style.display = 'none';
         }
 
-        // 3. Fonction pour supprimer
         window.removeItem = function(span, id) {
             selectedIds.delete(id);
-            span.parentElement.remove(); // Supprime le badge
-            document.getElementById(`input-comp-${id}`).remove(); // Supprime l'input caché
+            span.parentElement.remove(); 
+            document.getElementById(`input-comp-${id}`).remove(); 
         };
 
-        // Fermer la liste si on clique ailleurs
         document.addEventListener('click', function(e) {
             if (e.target !== searchInput) {
                 resultsDiv.style.display = 'none';

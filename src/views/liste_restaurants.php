@@ -1,3 +1,23 @@
+<?php
+// Contrôleur utilisé : index.php (pour l'affichage principal) et ajout_avis.php (pour le formulaire)
+
+// Informations transmises (Vue -> Contrôleur via GET) :
+// - cat_id : L'ID de la catégorie pour filtrer la liste (clic sur un bouton filtre).
+// - action=geo, lat, lon : Les coordonnées GPS et l'action déclenchée par le JavaScript pour la recherche par proximité.
+// - id : L'ID du restaurant transmis vers menu.php (clic sur la carte) ou avis_restaurant.php (clic sur les étoiles).
+
+// Informations transmises (Vue -> Contrôleur via POST - Modal) :
+// - restaurant_id, note, contenu : Données du formulaire d'avis envoyées vers le script 'ajout_avis.php'.
+
+// Informations importées (Contrôleur -> Vue) :
+// - Données Session : est_connecte, nom_client, is_guest (pour les badges), is_admin (pour le lien statistiques).
+// - Navigation : categories (liste pour les filtres), current_cat (pour mettre en surbrillance le filtre actif).
+// - Données Restaurants : 
+//      - stmt (Résultats si recherche GPS).
+//      - stmt_open (Restaurants ouverts).
+//      - stmt_close (Restaurants fermés).
+//      - titre_special ou stmt_cat (Pour le titre dynamique de la page).
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,47 +26,327 @@
     <title>Restaurants</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ... VOS STYLES CSS PRÉCÉDENTS ... */
-        /* Je remets le CSS essentiel pour la complétude du fichier */
-        :root { --bg-body: #f8f9fa; --text-main: #2c3e50; --primary-color: #1a1a1a; --accent-color: #e67e22; --green-success: #27ae60; --red-closed: #e74c3c; --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); --hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); }
-        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; line-height: 1.6; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding: 20px 30px; background: white; border-radius: 16px; box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 15px; }
-        .header-actions { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .header-actions a { text-decoration: none; font-weight: 600; font-size: 0.95rem; }
-        .btn-geo { cursor: pointer; padding: 8px 16px; border-radius: 50px; border: 1px solid #ddd; background: white; color: var(--text-main); font-weight: 600; font-size: 0.9rem; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
-        .btn-geo:hover { border-color: var(--accent-color); color: var(--accent-color); background-color: #fff8f0; }
-        .filtres-wrapper { margin-bottom: 40px; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; scrollbar-width: none; -ms-overflow-style: none; }
-        .filtres-wrapper::-webkit-scrollbar { display: none; }
-        .btn-filtre { display: inline-block; padding: 10px 24px; margin-right: 12px; border-radius: 50px; text-decoration: none; color: #7f8c8d; background-color: #ffffff; border: 1px solid #e0e0e0; transition: all 0.3s ease; font-size: 0.95rem; }
-        .btn-filtre:hover, .btn-filtre.actif { background-color: var(--primary-color); color: white; border-color: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .section-header { display: flex; align-items: center; margin-bottom: 25px; margin-top: 40px; }
-        .section-title { font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-main); }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; display: inline-block; }
-        .dot-open { background-color: var(--green-success); box-shadow: 0 0 10px rgba(39, 174, 96, 0.4); }
-        .dot-closed { background-color: var(--red-closed); }
-        .restaurant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 40px; padding-bottom: 20px; align-items: start; }
-        .restaurant-card { background: #ffffff; border-radius: 16px; padding: 25px; box-shadow: var(--card-shadow); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; min-height: 180px; text-decoration: none; color: inherit; position: relative; overflow: hidden; }
-        .restaurant-card:hover { transform: translateY(-5px); box-shadow: var(--hover-shadow); }
-        .card-link-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; text-decoration: none; }
-        .card-open { border-left: 5px solid var(--green-success); }
-        .card-closed { border-left: 5px solid var(--red-closed); opacity: 0.8; filter: grayscale(30%); }
-        .card-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px; display: block; line-height: 1.3; }
-        .restaurant-card:hover .card-title { color: var(--accent-color); }
-        .card-address { color: #7f8c8d; font-size: 0.9rem; margin-top: auto; margin-bottom: 0; }
-        .distance-badge { display: inline-block; color: var(--green-success); font-weight: 700; font-size: 0.9rem; margin-bottom: 10px; background-color: #e8f8f0; padding: 4px 8px; border-radius: 4px; width: fit-content; }
-        .status-badge { position: absolute; top: 20px; right: 20px; font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
-        .badge-open { background: #e8f8f0; color: var(--green-success); }
-        .badge-closed { background: #fce8e6; color: var(--red-closed); }
-        .review-section { display: flex; align-items: center; margin-bottom: 15px; position: relative; z-index: 2; width: fit-content; padding: 5px 10px; margin-left: -10px; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; text-decoration:none; }
-        .review-section:hover { background-color: #f0f2f5; }
-        .review-section:hover .btn-avis { background: #3498db; color: white; border-color: #3498db; }
-        .stars { color: #f1c40f; font-size: 1.1em; letter-spacing: 2px; margin: 0; }
-        .stars-empty { color: #ccc; }
-        .btn-avis { text-decoration: none; color: #95a5a6; font-size: 0.9rem; margin-left: 10px; cursor: pointer; border: 1px solid #ddd; border-radius: 50%; width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center; transition: all 0.2s; background: white; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; }
-        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; color: #999; }
+        :root { 
+            --bg-body: #f8f9fa; 
+            --text-main: #2c3e50; 
+            --primary-color: #1a1a1a; 
+            --accent-color: #e67e22; 
+            --green-success: #27ae60; 
+            --red-closed: #e74c3c; 
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+            --hover-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); 
+        }
+
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            line-height: 1.6; 
+        }
+
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+        }
+
+        .header-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 40px; 
+            padding: 20px 30px; 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: var(--card-shadow); 
+            flex-wrap: wrap; 
+            gap: 15px; 
+        }
+
+        .header-actions { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            flex-wrap: wrap; 
+        }
+
+        .header-actions a { 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+        }
+
+        .btn-geo { 
+            cursor: pointer; 
+            padding: 8px 16px; 
+            border-radius: 50px; 
+            border: 1px solid #ddd; 
+            background: white; 
+            color: var(--text-main); 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            transition: all 0.2s; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+        }
+
+        .btn-geo:hover { 
+            border-color: var(--accent-color); 
+            color: var(--accent-color); 
+            background-color: #fff8f0; 
+        }
+
+        .filtres-wrapper { 
+            margin-bottom: 40px; 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            padding-bottom: 10px; 
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+        }
+
+        .filtres-wrapper::-webkit-scrollbar { 
+            display: none; 
+        }
+
+        .btn-filtre { 
+            display: inline-block; 
+            padding: 10px 24px; 
+            margin-right: 12px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            color: #7f8c8d; 
+            background-color: #ffffff; 
+            border: 1px solid #e0e0e0; 
+            transition: all 0.3s ease; 
+            font-size: 0.95rem; 
+        }
+
+        .btn-filtre:hover, .btn-filtre.actif { 
+            background-color: var(--primary-color); 
+            color: white; 
+            border-color: var(--primary-color); 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+
+        .section-header { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 25px; 
+            margin-top: 40px; 
+        }
+
+        .section-title { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            margin: 0; 
+            color: var(--text-main); 
+        }
+
+        .status-dot { 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            margin-right: 10px; 
+            display: inline-block; 
+        }
+
+        .dot-open { 
+            background-color: var(--green-success); 
+            box-shadow: 0 0 10px rgba(39, 174, 96, 0.4); 
+        }
+
+        .dot-closed { 
+            background-color: var(--red-closed); 
+        }
+
+        .restaurant-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 40px; 
+            padding-bottom: 20px; 
+            align-items: start; 
+        }
+
+        .restaurant-card { 
+            background: #ffffff; 
+            border-radius: 16px; 
+            padding: 25px; 
+            box-shadow: var(--card-shadow); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 180px; 
+            color: inherit; 
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        .restaurant-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: var(--hover-shadow); 
+        }
+
+        .card-link-overlay { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 1; 
+            text-decoration: none; 
+        }
+
+        .card-open { 
+            border-left: 5px solid var(--green-success); 
+        }
+
+        .card-closed { 
+            border-left: 5px solid var(--red-closed); 
+            opacity: 0.8; 
+            filter: grayscale(30%); 
+        }
+
+        .card-title { 
+            font-size: 1.35rem; 
+            font-weight: 700; 
+            color: var(--text-main); 
+            margin-bottom: 10px; 
+            display: block; 
+            line-height: 1.3; 
+        }
+
+        .restaurant-card:hover .card-title { 
+            color: var(--accent-color); 
+        }
+
+        .card-address { 
+            color: #7f8c8d; 
+            font-size: 0.9rem; 
+            margin-top: auto; 
+            margin-bottom: 0; 
+        }
+
+        .distance-badge { 
+            display: inline-block; 
+            color: var(--green-success); 
+            font-weight: 700; 
+            font-size: 0.9rem; 
+            margin-bottom: 10px; 
+            background-color: #e8f8f0; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            width: fit-content; 
+        }
+
+        .status-badge { 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+            text-transform: uppercase; 
+        }
+
+        .badge-open { 
+            background: #e8f8f0; 
+            color: var(--green-success); 
+        }
+
+        .badge-closed { 
+            background: #fce8e6; 
+            color: var(--red-closed); 
+        }
+
+        .review-section { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 15px; 
+            position: relative; 
+            z-index: 2; 
+            width: fit-content; 
+            padding: 5px 10px; 
+            margin-left: -10px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: background-color 0.2s; 
+            text-decoration:none; 
+        }
+
+        .review-section:hover { 
+            background-color: #f0f2f5; 
+        }
+
+        .review-section:hover .btn-avis { 
+            background: #3498db; 
+            color: white; 
+            border-color: #3498db; 
+        }
+
+        .stars { 
+            color: #f1c40f; 
+            font-size: 1.1em; 
+            letter-spacing: 2px; 
+            margin: 0; 
+        }
+
+        .stars-empty { 
+            color: #ccc; 
+        }
+
+        .btn-avis { 
+            text-decoration: none; 
+            color: #95a5a6; 
+            font-size: 0.9rem; 
+            margin-left: 10px; 
+            cursor: pointer; 
+            border: 1px solid #ddd; 
+            border-radius: 50%; 
+            width: 30px; 
+            height: 30px; 
+            display: inline-flex; 
+            justify-content: center; 
+            align-items: center; 
+            transition: all 0.2s; 
+            background: white; 
+        }
+
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 1000; 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        .modal-content { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 10px; 
+            width: 400px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            position: relative; 
+        }
+
+        .close-modal { 
+            position: absolute; 
+            top: 10px; 
+            right: 15px; 
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            color: #999; 
+        }
     </style>
 </head>
 <body>
@@ -93,7 +393,7 @@
     </div>
 
     <?php
-    // --- FONCTION D'AFFICHAGE COMMUNE ---
+    
     function afficherCarte($row, $est_connecte, $isOpen = true) {
         $id = $row['restaurant_id'];
         $nom = htmlspecialchars($row['nom']);
@@ -106,7 +406,7 @@
 
         echo "<div class='restaurant-card $cssClass'>";
             
-            // 1. LIEN GLOBAL (VERS MENU)
+            // lien vers la carte
             echo "<a href='menu.php?id={$id}' class='card-link-overlay'></a>";
 
             echo $badge;
@@ -115,7 +415,7 @@
                 echo "<span class='card-title'>{$nom}</span>";
             echo "</div>";
 
-            // 2. LIEN AVIS (VERS AVIS_RESTAURANT)
+            // lien pour voir les avis
             echo "<a href='avis_restaurant.php?id={$id}' class='review-section' title='Lire les avis'>";
                 echo "<span class='stars' style='margin-right:8px;'>"; 
                 for($i=1; $i<=5; $i++) echo ($i <= round($note)) ? "★" : "<span class='stars-empty'>☆</span>";
@@ -123,7 +423,7 @@
                 echo "<span style='font-weight:bold; color:#2c3e50; margin-right:5px; font-size:0.95em;'>" . number_format($note, 1) . " / 5</span>";
                 echo "<span style='font-size:0.85em; color:#95a5a6;'>(" . $nb_avis . ")</span>";
                 
-                // CRAYON MODAL (HORS DU LIEN AVIS, MAIS DANS LA ZONE VISUELLE)
+                // pour écrire un commentaire
                 if ($est_connecte) {
                     echo "<div class='btn-avis' onclick='event.preventDefault(); event.stopPropagation(); openAvisModal($id, \"" . addslashes($nom) . "\")' title='Laisser un avis'>✎</div>";
                 }
@@ -136,12 +436,10 @@
 
             echo "<p class='card-address'>📍 {$adresse}</p>";
 
-        echo "</div>"; // Fin restaurant-card
+        echo "</div>"; 
     }
-
-    // --- LOGIQUE PRINCIPALE ---
     
-    // CAS 1 : RECHERCHE GPS (Affichage unique)
+    // rechercge gps
     if ($lat) {
         echo "<h2 class='section-title'>";
         echo htmlspecialchars($titre_special); 
@@ -158,21 +456,20 @@
         echo "</div>";
 
     } 
-    // CAS 2 : CATÉGORIE OU ACCUEIL (Affichage séparé Ouvert/Fermé)
+    // affichage catégories + ouvert/fermé
     else {
         
-        // Affichage du titre de catégorie si présent
+        // catégories
         if (isset($stmt_cat)) { 
-            // stmt_cat peut être un statement ou un tableau selon votre modèle
             if (is_object($stmt_cat)) { $catInfo = $stmt_cat->fetch(PDO::FETCH_ASSOC); $catName = $catInfo['nom']; }
-            elseif (is_array($stmt_cat) && !empty($stmt_cat)) { $catName = $stmt_cat['nom']; } // Si fetch déjà fait
+            elseif (is_array($stmt_cat) && !empty($stmt_cat)) { $catName = $stmt_cat['nom']; } 
             
             if(isset($catName)) {
                 echo "<h2 class='section-title'>Catégorie : " . htmlspecialchars($catName) . "</h2>";
             }
         }
 
-        // A. OUVERTS
+        // ouvert
         echo "<div class='section-header'><span class='status-dot dot-open'></span><h2 class='section-title'>Ouvert maintenant</h2></div>";
         echo "<div class='restaurant-grid'>";
         if (isset($stmt_open) && $stmt_open->rowCount() > 0) {
@@ -184,7 +481,7 @@
         }
         echo "</div>";
 
-        // B. FERMÉS
+        // fermé
         echo "<div class='section-header'><span class='status-dot dot-closed'></span><h2 class='section-title' >Actuellement fermé</h2></div>";
         echo "<div class='restaurant-grid'>";
         if (isset($stmt_close) && $stmt_close->rowCount() > 0) {
@@ -226,7 +523,6 @@
 </div>
 
 <script>
-    // Scripts inchangés
     function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(showPosition, showError);

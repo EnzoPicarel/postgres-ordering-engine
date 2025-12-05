@@ -1,3 +1,24 @@
+<?php
+// Contrôleur utilisé : commande.php
+// Informations transmises (Vue -> Contrôleur via GET/POST) :
+// - use_remise (GET) : ID de la remise que le client souhaite appliquer.
+// - commande_id, restaurant_id, client_id, total, cout_points (POST vers confirmer_commande.php) : Données pour valider le paiement.
+// - commande_id (POST vers annuler_commande.php) : Données pour annuler le panier.
+
+// Informations importées (Contrôleur -> Vue) :
+// - historiqueCommandes (Tableau principal) contenant pour chaque commande :
+//      - commande_id, date_commande, heure_retrait, nom_restaurant
+//      - prix_total_remise (Prix initial)
+//      - prix_final_a_payer (Prix après réduction)
+//      - montant_reduction (Montant en € de la remise)
+//      - cout_points_remise (Points à déduire du solde)
+//      - solde_points_actuel (Solde fidélité du client)
+//      - points_gagnes_commande (Points que la commande va rapporter)
+//      - remises_possibles (Tableau des récompenses débloquées)
+//      - liste_articles (Tableau des items à la carte)
+//      - liste_formules (Tableau structuré des formules avec leur composition)
+// - is_guest (Booléen) : Indique si l'utilisateur est en mode invité (impacte l'affichage fidélité).
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,12 +27,10 @@
     <title>Mon Panier</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. Variables & Base --- */
         :root { --bg-body: #f8f9fa; --text-main: #2c3e50; --text-muted: #6c757d; --primary-color: #1a1a1a; --accent-color: #e67e22; --success-color: #27ae60; --danger-color: #e74c3c; --info-bg: #e3f2fd; --info-text: #0d47a1; --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
         body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; line-height: 1.6; }
         .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
 
-        /* --- Header --- */
         .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding: 20px 30px; background: white; border-radius: 16px; box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 15px; }
         .user-info { font-size: 1.1rem; display: flex; align-items: center; }
         .header-actions { display: flex; align-items: center; gap: 20px; }
@@ -21,7 +40,6 @@
         .btn-logout { color: var(--danger-color) !important; }
         .badge-guest { background-color: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-left: 10px; border: 1px solid #ffeeba; }
 
-        /* --- Carte --- */
         .section-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 30px; color: var(--text-main); border-left: 5px solid var(--accent-color); padding-left: 15px; }
         .commande-card { background: #ffffff; border-radius: 16px; padding: 30px; box-shadow: var(--card-shadow); margin-bottom: 25px; border: 1px solid rgba(0,0,0,0.02); }
         .commande-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f1f1; padding-bottom: 20px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -29,21 +47,18 @@
         .commande-header h2 { margin: 0; font-size: 1.4rem; color: var(--primary-color); }
         .commande-meta { font-size: 0.9rem; color: var(--text-muted); background: #f8f9fa; padding: 6px 14px; border-radius: 20px; }
 
-        /* --- Fidélité --- */
         .loyalty-section { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-top: 30px; }
         .loyalty-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .loyalty-info h4 { margin:0; color: #15803d; font-size: 1.1rem; }
         .loyalty-info p { margin:5px 0 0 0; color: #166534; font-size: 0.9rem; }
         .loyalty-badge { background-color: #16a34a; color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 1rem; }
 
-        /* --- Promo Invité --- */
         .loyalty-section.loyalty-guest { background-color: #fff7ed; border-color: #fed7aa; }
         .loyalty-section.loyalty-guest h4 { color: #ea580c; }
         .loyalty-section.loyalty-guest p { color: #c2410c; }
         .loyalty-section.loyalty-guest .loyalty-badge { background-color: #f97316; opacity: 0.9; }
         .loyalty-section.loyalty-guest a { color: #ea580c; text-decoration: underline; font-weight: 700; }
 
-        /* --- Récompenses --- */
         .rewards-list { border-top: 1px solid #bbf7d0; padding-top: 15px; margin-top: 10px; }
         .rewards-title { font-size: 0.85rem; font-weight: 700; color: #15803d; text-transform: uppercase; margin-bottom: 10px; display: block; }
         .reward-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -51,7 +66,6 @@
         .btn-use-reward { background-color: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.2s; }
         .btn-use-reward:hover { background-color: #15803d; }
 
-        /* --- Total & Actions --- */
         h3 { font-size: 1.1rem; color: var(--text-main); margin-top: 25px; margin-bottom: 15px; border-left: 4px solid; padding-left: 10px; }
         h3.titre-formule { border-color: #f59e0b; color: #d97706; }
         h3.titre-article { border-color: #3b82f6; color: #2563eb; }
@@ -124,33 +138,31 @@
             $dateCmd = new DateTime($commande['date_commande']);
             $dateAffichee = $dateCmd->format('d/m/Y à H:i');
 
-            // --- VARIABLES DE CALCUL ---
             $is_guest = isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true;
             
-            // 1. Prix
+            // 1. prix
             $prix_initial = $commande['prix_total_remise'] ?? 0;
             $prix_final = isset($commande['prix_final_a_payer']) ? $commande['prix_final_a_payer'] : $prix_initial;
             $montant_reduction = isset($commande['montant_reduction']) ? $commande['montant_reduction'] : 0;
             
-            // 2. Coût en points (si remise utilisée)
+            // 2. cout en points (si remise utilisée)
             $cout_points = isset($commande['cout_points_remise']) ? intval($commande['cout_points_remise']) : 0;
 
-            // 3. Solde Actuel
+            // 3. solde actuel
             $solde_actuel = isset($commande['solde_points_actuel']) ? intval($commande['solde_points_actuel']) : 0;
 
-            // 4. Points Gagnés (sur le prix payé)
-            // Si invité, on gagne 0
+            // 4. points gagnés (sur le prix payé)
+            // si invité, on gagne 0
             $points_gagnes = $is_guest ? 0 : intval(floor($prix_final));
-            $points_potentiels = intval(floor($prix_final)); // Pour l'affichage invité
+            $points_potentiels = intval(floor($prix_final)); // pour l'affichage invité
 
-            // 5. Calcul du solde final PROJETÉ
-            // Solde Final = Solde Actuel - Coût Récompense + Points Gagnés
+            // 5. calcul du solde final projeté
+            // solde final = solde actuel - cout recompense + points gagnés
             $solde_final_projete = $solde_actuel - $cout_points + $points_gagnes;
             // ---------------------------
 
             echo "<div class='commande-card'>";
                 
-                // HEADER
                 echo "<div class='commande-header'>";
                     echo "<div>";
                         if(isset($commande['nom_restaurant'])) {
@@ -167,10 +179,9 @@
                     echo "</div>";
                 echo "</div>";
 
-                // BODY
                 echo "<div class='commande-body'>";
                     
-                    // 1. FORMULES
+                    // formules
                     if (!empty($commande['liste_formules'])) {
                         echo "<h3 class='titre-formule'>🍱 Formules</h3>";
                         echo "<table class='modern-table'><thead><tr><th>Menu</th><th>Composition</th><th class='col-right'>Prix</th></tr></thead><tbody>";
@@ -188,7 +199,7 @@
                         echo "</tbody></table>";
                     }
 
-                    // 2. ARTICLES
+                    // articles
                     if (!empty($commande['liste_articles'])) {
                         echo "<h3 class='titre-article'>📦 Articles à la carte</h3>";
                         echo "<table class='modern-table'><thead><tr><th>Article</th><th class='col-right'>P.U.</th><th class='col-center'>Qté</th><th class='col-right'>Total</th></tr></thead><tbody>";
@@ -204,17 +215,15 @@
                         echo "</tbody></table>";
                     }
 
-                    // 3. FIDÉLITÉ & REMISES
+                    // fidélité et remises
                     if (!$is_guest) {
                         echo "<div class='loyalty-section'>";
                             
-                            // En-tête du bloc fidélité
                             echo "<div class='loyalty-header'>";
                                 echo "<div class='loyalty-info'>";
                                     echo "<h4>🎁 Programme Fidélité</h4>";
                                     echo "<p>Solde actuel : <strong>{$solde_actuel} pts</strong></p>";
                                     
-                                    // Affichage du coût en points si utilisé
                                     if ($cout_points > 0) {
                                         echo "<p style='color:#e74c3c; font-size:0.9rem;'>Coût récompense : -{$cout_points} pts</p>";
                                     }
@@ -224,7 +233,7 @@
                                 echo "<div class='loyalty-badge'>+{$points_gagnes} pts</div>";
                             echo "</div>";
 
-                            // A. LISTE DES RÉCOMPENSES DISPONIBLES (SI AUCUNE DÉJÀ APPLIQUÉE)
+                            // liste des récompenses dispo (si aucune sélectionnée)
                             if ($montant_reduction == 0 && !empty($commande['remises_possibles'])) {
                                 echo "<div class='rewards-list'>";
                                 echo "<span class='rewards-title'>✨ Récompenses disponibles :</span>";
@@ -239,7 +248,7 @@
                                 echo "</div>";
                             }
 
-                            // B. REMISE APPLIQUÉE
+                            // remise appliquée
                             if ($montant_reduction > 0) {
                                 echo "<div style='margin-top:15px; padding:10px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; color:#856404;'>";
                                     echo "<strong>✅ Récompense active :</strong> -" . number_format($montant_reduction, 2) . " €";
@@ -249,7 +258,6 @@
 
                         echo "</div>";
                     } else {
-                        // MODE INVITÉ
                         echo "<div class='loyalty-section loyalty-guest'>";
                             echo "<div class='loyalty-header'>";
                                 echo "<div class='loyalty-info'>";
@@ -262,7 +270,7 @@
                         echo "</div>";
                     }
 
-                    // 4. TOTAL RECALCULÉ
+                    // total recalculé
                     echo "<div class='total-section'>";
                         echo "<div class='total-row'>";
                             if ($montant_reduction > 0) {
@@ -271,20 +279,20 @@
                             } else {
                                 echo "<span class='total-label'>Total à payer :</span>";
                             }
-                            // On affiche toujours le prix final
+                            // prix final
                             echo "<span class='total-price'>" . number_format($prix_final, 2, ',', ' ') . " €</span>";
                         echo "</div>";
                     echo "</div>";
 
-                    // 5. ACTIONS
+                    // actions
                     echo "<div class='actions-group'>";
                         
-                        // ANNULER
+                        // annulation
                         echo "<form action='annuler_commande.php' method='POST' onsubmit=\"return confirm('Êtes-vous sûr de vouloir vider votre panier ?');\">";
                         echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
                         echo "<button type='submit' class='btn-annuler'>🗑️ Annuler</button>";
                         echo "</form>";
-
+                        // confirmation
                         echo "<form action='confirmer_commande.php' method='POST'>";
                         echo "<input type='hidden' name='commande_id' value='" . $commande_id . "'>";
                         $resto_id = isset($commande['restaurant_id']) ? $commande['restaurant_id'] : 0;
@@ -298,10 +306,10 @@
                         echo "<button type='submit' class='btn-confirmer'>✅ Valider et Payer</button>";
                         echo "</form>";
                     
-                    echo "</div>"; // Fin actions
+                    echo "</div>"; 
 
-                echo "</div>"; // Fin body
-            echo "</div>"; // Fin card
+                echo "</div>"; 
+            echo "</div>"; 
         }
 
     } else {

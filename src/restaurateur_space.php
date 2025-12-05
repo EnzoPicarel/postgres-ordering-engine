@@ -1,4 +1,22 @@
 <?php
+/*
+Résumé :
+    - Vérification de sécurité : Contrôle si la session contient un 'restaurant_id', sinon redirection vers login.
+    - Initialisation des modèles : Instanciation de Restaurant, Plat, Formule, Complements avec la connexion BDD.
+    - Gestion des formulaires (POST) :
+        - Ajout de plat : Création du plat via le modèle Plat, puis association des compléments via le modèle Complements.
+        - Ajout de formule : Création de la formule, liaison des catégories d'items, et création/liaison des conditions horaires via le modèle Formule (Logique transactionnelle).
+        - Ajout d'horaire : Création d'un créneau et liaison au restaurant via le modèle Restaurant.
+    - Gestion des actions (GET) :
+        - Suppression d'horaire : Appel au modèle Restaurant pour supprimer le lien horaire.
+    - Préparation des données d'affichage (selon la page demandée) :
+        - Stats : Récupération des statistiques de vente agrégées.
+        - Ajout Plat/Formules : Récupération de la liste complète des catégories d'items.
+        - Horaires : Récupération de la liste des horaires actuels du restaurant.
+    - Chargement de la vue : Inclusion du fichier 'views/dashboard_restaurateur.php'.
+*/
+
+
 session_start();
 
 ini_set('display_errors', 1);
@@ -10,7 +28,6 @@ require_once './models/Plats.php';
 require_once './models/Formules.php';
 require_once './models/Complements.php';
 
-// 1. SÉCURITÉ : Vérification de l'accès
 if (!isset($_SESSION['restaurant_id'])) {
     header("Location: login_restaurateur.php");
     exit();
@@ -23,32 +40,29 @@ $formule = new Formule($db);
 $restaurant_id = $_SESSION['restaurant_id'];
 $restaurant_nom = $_SESSION['restaurant_nom'];
 
-// 2. GESTION DES ACTIONS (Router interne)
 $page = isset($_GET['page']) ? $_GET['page'] : 'stats'; // Page par défaut
 $message_succes = null;
 $message_erreur = null;
 
-// --- TRAITEMENT FORMULAIRE : AJOUTER UN PLAT ---
+// ajout plat
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_item') {
     
     $nom = trim($_POST['nom']);
     $prix = floatval($_POST['prix']);
     $cat_id = intval($_POST['categorie_id']);
     
-    // Gestion de la disponibilité (Checkbox)
+    // gestion dispo
     $dispo = isset($_POST['disponible']) ? 'TRUE' : 'FALSE';
     $complements_ids = isset($_POST['complements']) ? $_POST['complements'] : [];
 
     if (!empty($nom) && $prix > 0) {
         
-        // 1. On récupère l'ID du nouveau plat
         $new_item_id = $item->addItem($nom, $prix, $dispo, $restaurant_id, $cat_id);
 
         if ($new_item_id) {
             
-            // 2. Si des compléments sont sélectionnés, on les ajoute
+            //compléments
             if (!empty($complements_ids)) {
-                // On a besoin du modèle Complements (assurez-vous de l'avoir inclus en haut)
                 require_once './models/Complements.php'; 
                 $compModel = new Complements($db);
 
@@ -64,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// --- TRAITEMENT : AJOUTER UNE FORMULE ---
+// ajout formule
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_formule') {
     
     $nom = trim($_POST['nom']);
@@ -74,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $conditions_data = [];
     if (isset($_POST['cond_jour']) && is_array($_POST['cond_jour'])) {
         for ($i = 0; $i < count($_POST['cond_jour']); $i++) {
-            // On ne garde que les lignes complètes
             if (!empty($_POST['cond_debut'][$i]) && !empty($_POST['cond_fin'][$i])) {
                 $conditions_data[] = [
                     'jour'  => intval($_POST['cond_jour'][$i]),
@@ -87,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     if (!empty($nom) && $prix > 0 && count($cats_ids) > 0) {
         
-        // Appel de la nouvelle méthode
         if ($formule->createFormule($nom, $prix, $restaurant_id, $cats_ids, $conditions_data)) {
             $message_succes = "Formule créée avec succès !";
         } else {
@@ -98,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// --- TRAITEMENT : AJOUTER UN HORAIRE ---
+// ajout horaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_horaire') {
     $jour = intval($_POST['jour']);
     $debut = $_POST['debut'];
@@ -113,56 +125,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// --- TRAITEMENT : SUPPRIMER UN HORAIRE ---
+// suppression horaire
 if (isset($_GET['action']) && $_GET['action'] === 'del_horaire' && isset($_GET['id'])) {
     if ($restaurant->deleteHoraire($restaurant_id, $_GET['id'])) {
         $message_succes = "Créneau supprimé.";
     } else {
         $message_erreur = "Impossible de supprimer ce créneau.";
     }
-    header("Location: espace_restaurateur.php?page=horaires"); 
+    header("Location: restaurateur_space.php?page=horaires"); 
     exit(); 
 }
 
 
-// --- PRÉPARATION DES DONNÉES POUR LA VUE ---
+// Données pour la vue
 
-// A. Si on est sur la page STATISTIQUES
+// page stats
 $stats = [];
 if ($page === 'stats') {
-    // Appel de la méthode optimisée qu'on a vue ensemble
     $stats = $restaurant->getStats($restaurant_id);
 }
 
-// B. Si on est sur la page AJOUT PLAT, on a besoin des catégories
+// page ajout de plat
 $categories_items = [];
 if ($page === 'add_item') {
     $stmt_cat = $item->getItemFromAllCat();
     $categories_items = $stmt_cat->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// C. Si on est sur la page FORMULES, on a besoin de la liste des catégories pour les cases à cocher
+//page formules
 if ($page === 'formules') {
-    // On réutilise la méthode du modèle Item pour avoir toutes les catégories dispos
     $stmt_cat = $item->getItemFromAllCat();
     $categories_items = $stmt_cat->fetchAll(PDO::FETCH_ASSOC);
     $jours = [1=>'Lundi', 2=>'Mardi', 3=>'Mercredi', 4=>'Jeudi', 5=>'Vendredi', 6=>'Samedi', 7=>'Dimanche'];
     $conditions_dispo = $formule->getAllConditions();
 }
 
-// D. Si on est sur la page HORAIRES on a besoin des horaires du resto
-
+// page horaires
 $liste_horaires = [];
 if ($page === 'horaires') {
     $liste_horaires = $restaurant->getHoraires($restaurant_id);
     
-    // Petite astuce pour afficher les noms des jours
     $jours_semaine = [
         1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 
         5 => 'Vendredi', 6 => 'Samedi', 7 => 'Dimanche'
     ];
 }
 
-// 3. CHARGEMENT DE LA VUE
 include 'views/dashboard_restaurateur.php';
 ?>
