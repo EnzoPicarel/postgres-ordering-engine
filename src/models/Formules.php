@@ -43,7 +43,7 @@ class Formule
             }
 
             if (!empty($conditions_data)) {
-                
+
                 // Requête pour vérifier l'existence
                 $sql_check = Query::loadQuery("sql_requests/checkConditions.sql");
                 $stmt_check = $this->conn->prepare($sql_check);
@@ -75,27 +75,48 @@ class Formule
                     $stmt_link->execute([$formule_id, $cond_id]);
                 }
             }
-                
+
             // Si arrivé la alors écrire "au propre"
             $this->conn->commit();
             return true;
 
         } catch (Exception $e) {
-                // Si problème annuler le tout
-                $this->conn->rollBack();
-                return false;
+            $this->conn->rollBack();
+            return false;
         }
     }
 
-    public function getAllConditions() {
-        // On récupère les conditions pour les afficher (ex: Jour 1, 12:00 - 15:00)
+    public function getAllConditions()
+    {
         $sql = "SELECT condition_formule_id, jour_disponibilite, creneau_horaire_debut, creneau_horaire_fin 
                 FROM conditions_formules 
                 ORDER BY jour_disponibilite, creneau_horaire_debut";
-        
+
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getFormulesForOwner($restaurant_id)
+    {
+        $query = Query::loadQuery('sql_requests/getFormulesByRestaurantOwner.sql');
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$restaurant_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateFormule($formule_id, $restaurant_id, $nom, $prix)
+    {
+        $query = Query::loadQuery('sql_requests/updateFormule.sql');
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([$nom, $prix, $formule_id, $restaurant_id]);
+    }
+
+    public function deleteFormule($formule_id, $restaurant_id)
+    {
+        $query = Query::loadQuery('sql_requests/deleteFormule.sql');
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([$formule_id, $formule_id, $formule_id, $restaurant_id]);
     }
 }
 ?>

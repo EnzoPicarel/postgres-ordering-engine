@@ -70,15 +70,25 @@ class Commande
     }
 
 
-    public function confirmOrder($commande_id, $client_id, $restaurant_id, $prix_total, $accorder_points = true)
+    public function confirmOrder($commande_id, $client_id, $restaurant_id, $prix_total, $heure_retrait, $est_asap = false, $accorder_points = true)
     {
         try {
             $this->conn->beginTransaction();
 
-            $sqlPrice = "UPDATE commandes SET prix_total_remise = ? WHERE commande_id = ?";
-            $stmtPrice = $this->conn->prepare($sqlPrice);
-            $stmtPrice->bindValue(1, $prix_total);
-            $stmtPrice->bindValue(2, $commande_id);
+            if ($heure_retrait === null) {
+                $sqlPrice = "UPDATE commandes SET prix_total_remise = ?, est_asap = ? WHERE commande_id = ?";
+                $stmtPrice = $this->conn->prepare($sqlPrice);
+                $stmtPrice->bindValue(1, $prix_total);
+                $stmtPrice->bindValue(2, $est_asap ? 1 : 0);
+                $stmtPrice->bindValue(3, $commande_id);
+            } else {
+                $sqlPrice = "UPDATE commandes SET prix_total_remise = ?, heure_retrait = ?, est_asap = ? WHERE commande_id = ?";
+                $stmtPrice = $this->conn->prepare($sqlPrice);
+                $stmtPrice->bindValue(1, $prix_total);
+                $stmtPrice->bindValue(2, $heure_retrait);
+                $stmtPrice->bindValue(3, $est_asap ? 1 : 0);
+                $stmtPrice->bindValue(4, $commande_id);
+            }
             $stmtPrice->execute();
 
             $queryConfirm = Query::loadQuery('sql_requests/confirmOrder.sql');
@@ -152,5 +162,5 @@ class Commande
         $stmt->execute([$client_id]);
         return $stmt->fetchColumn();
     }
-} 
+}
 ?>
