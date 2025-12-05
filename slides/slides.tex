@@ -77,8 +77,7 @@
         \column{0.6\textwidth}
         \begin{figure}
             \centering
-            % REMPLACEZ par le nom de votre image (ex: diagramme.png)
-            % Si vous n'avez pas l'image, le cadre 'demo' s'affichera
+            % Assurez-vous que ce fichier existe
             \includegraphics[width=\textwidth, height=0.6\textheight, keepaspectratio]{schema_entite_association.jpg}
             \caption{Diagramme E/A}
         \end{figure}
@@ -89,21 +88,17 @@
 % SLIDE 2 : MODÈLE RELATIONNEL
 % ------------------------------------------------
 \begin{frame}{2. Modèle Relationnel (Normalisé)}
-    passage au schéma relationnel en respectant la 3ème Forme Normale (3FN).
+    Passage au schéma relationnel en respectant la 3ème Forme Normale (3FN).
     
    \begin {figure}
         \centering
-        % REMPLACEZ par le nom de votre image (ex: relationnel.png)
-        % Si vous n'avez pas l'image, le cadre 'demo' s'affichera
+        % Assurez-vous que ce fichier existe
         \includegraphics[width=0.9\textwidth, height=0.6\textheight, keepaspectratio]{schéma_relationnel.jpg}
         \caption{Schéma Relationnel}
     \end{figure}
     
 \end{frame}
 
-% ------------------------------------------------
-% SLIDE 3 : REQUÊTE COMPLEXE
-% ------------------------------------------------
 % ------------------------------------------------
 % SLIDE 3 : REQUÊTE COMPLEXE (Disponibilité Formules)
 % ------------------------------------------------
@@ -143,11 +138,13 @@ ORDER BY f.prix
     \tiny 
     \textit{Note : Utilisation de \texttt{NOT EXISTS} / \texttt{EXISTS} et des fonctions temporelles \texttt{EXTRACT(ISODOW)} et \texttt{CURRENT\_TIME} pour le filtrage dynamique.}
 \end{frame}
+
 % ------------------------------------------------
 % SLIDE 4 : L'APPLICATION
 % ------------------------------------------------
 \begin{frame}{4. Démonstration de l'Application}
     \begin{columns}
+        % Colonne de GAUCHE (Texte)
         \column{0.5\textwidth}
         \textbf{Architecture Technique :}
         \begin{itemize}
@@ -165,13 +162,15 @@ ORDER BY f.prix
             \item Mode "Invité" vs "Client".
         \end{itemize}
 
+        % Colonne de DROITE (Image)
         \column{0.5\textwidth}
-        % \begin{figure}
-        %     \centering
-        %     % REMPLACEZ par une capture d'écran de votre site
-        %     \includegraphics[width=\textwidth, angle=-5]{} 
-        %     \caption{Interface de commande}
-        % \end{figure}
+        \begin{figure}
+            \centering
+            % Insertion de l'image demandée
+            % keepaspectratio évite de déformer l'image
+            \includegraphics[width=\textwidth, height=0.7\textheight, keepaspectratio]{page_accueil.png} 
+            \caption{Page d'accueil de l'application}
+        \end{figure}
     \end{columns}
 \end{frame}
 
