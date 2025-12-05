@@ -519,7 +519,7 @@
 
     </div>
 
-    <<<<<<< HEAD <div id="modalAvis" class="modal-overlay">
+    <div id="modalAvis" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAvisModal()">&times;</span>
             <h3 id="modalRestoName">Noter ce restaurant</h3>
@@ -545,40 +545,31 @@
                     l'avis</button>
             </form>
         </div>
-        </div>
+    </div>
 
-        <script>
-            // Scripts inchangés
-            function getLocation() {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(showPosition, showError);
-                } else {
-                    alert("La géolocalisation n'est pas supportée.");
-                }
-=======
-<script>
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError);
-        } else {
-            alert("La géolocalisation n'est pas supportée.");
->>>>>>> 738b5448199a61f02b208d8711746e87b32bf3ad
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("La géolocalisation n'est pas supportée.");
             }
-            function showPosition(position) {
-                window.location.href = "index.php?action=geo&lat=" + position.coords.latitude + "&lon=" + position.coords.longitude;
-            }
-            function showError(error) { alert("Erreur de géolocalisation."); }
-            function openAvisModal(id, nom) {
-                document.getElementById('modalRestoId').value = id;
-                document.getElementById('modalRestoName').innerText = "Noter : " + nom;
-                document.getElementById('modalAvis').style.display = 'flex';
-            }
-            function closeAvisModal() { document.getElementById('modalAvis').style.display = 'none'; }
-            window.onclick = function (event) {
-                var modal = document.getElementById('modalAvis');
-                if (event.target == modal) { modal.style.display = "none"; }
-            }
-        </script>
+        }
+        function showPosition(position) {
+            window.location.href = "index.php?action=geo&lat=" + position.coords.latitude + "&lon=" + position.coords.longitude;
+        }
+        function showError(error) { alert("Erreur de géolocalisation."); }
+        function openAvisModal(id, nom) {
+            document.getElementById('modalRestoId').value = id;
+            document.getElementById('modalRestoName').innerText = "Noter : " + nom;
+            document.getElementById('modalAvis').style.display = 'flex';
+        }
+        function closeAvisModal() { document.getElementById('modalAvis').style.display = 'none'; }
+        window.onclick = function (event) {
+            var modal = document.getElementById('modalAvis');
+            if (event.target == modal) { modal.style.display = "none"; }
+        }
+    </script>
 
 </body>
 

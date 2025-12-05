@@ -240,10 +240,10 @@
         <h2>👨‍🍳 Espace Pro<br><small
                 style="font-size:0.7em; color:#bdc3c7"><?= htmlspecialchars($restaurant_nom) ?></small></h2>
 
-        <a href="espace_restaurateur.php?page=stats" class="nav-link <?= $page == 'stats' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=stats" class="nav-link <?= $page == 'stats' ? 'active' : '' ?>">
             📊 Statistiques
         </a>
-        <a href="espace_restaurateur.php?page=add_item" class="nav-link <?= $page == 'add_item' ? 'active' : '' ?>">
+        <a href="restaurateur_space.php?page=add_item" class="nav-link <?= $page == 'add_item' ? 'active' : '' ?>">
             🍽️ Gérer les plats
         </a>
         <a href="restaurateur_space.php?page=formules" class="nav-link <?= $page == 'formules' ? 'active' : '' ?>">
@@ -320,7 +320,7 @@
 
             <div class="card" style="max-width: 600px;">
                 <h2 style="margin-top:0;">Ajouter un nouveau plat</h2>
-                <form method="POST" action="espace_restaurateur.php?page=add_item">
+                <form method="POST" action="restaurateur_space.php?page=add_item">
                     <input type="hidden" name="action" value="add_item">
 
                     <div class="form-group">
@@ -529,7 +529,7 @@
 
             <div class="card" style="max-width: 600px;">
                 <h2 style="margin-top:0;">Ajouter une nouvelle formule</h2>
-                <form method="POST" action="espace_restaurateur.php?page=formules">
+                <form method="POST" action="restaurateur_space.php?page=formules">
                     <input type="hidden" name="action" value="add_formule">
 
                     <div class="form-group">
@@ -668,7 +668,7 @@
                                         <td><?= substr($h['heure_ouverture'], 0, 5) ?></td>
                                         <td><?= substr($h['heure_fermeture'], 0, 5) ?></td>
                                         <td>
-                                            <a href="espace_restaurateur.php?page=horaires&action=del_horaire&id=<?= $h['horaire_ouverture_id'] ?>"
+                                            <a href="restaurateur_space.php?page=horaires&action=del_horaire&id=<?= $h['horaire_ouverture_id'] ?>"
                                                 style="color:#e74c3c; text-decoration:none; font-weight:bold;"
                                                 onclick="return confirm('Supprimer ce créneau ?');">
                                                 🗑️

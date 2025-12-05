@@ -17,9 +17,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            <<<<<<< HEAD min-height: 100vh;
-            =======min-height: 100vh;
-            >>>>>>>738b5448199a61f02b208d8711746e87b32bf3ad margin: 0;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
             box-sizing: border-box;
         }
@@ -30,9 +29,8 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
-            <<<<<<< HEAD max-width: 450px;
-            =======max-width: 450px;
-            >>>>>>>738b5448199a61f02b208d8711746e87b32bf3ad text-align: center;
+            max-width: 450px;
+            text-align: center;
         }
 
         h2 {
@@ -123,8 +121,7 @@
     <div class="login-container">
         <h2>Créer un compte 📝</h2>
 
-        <?php
-        if (isset($error_message) && !empty($error_message)): ?>
+        <?php if (isset($error_message) && !empty($error_message)): ?>
             <div class="error-msg">
                 <?= htmlspecialchars($error_message) ?>
             </div>

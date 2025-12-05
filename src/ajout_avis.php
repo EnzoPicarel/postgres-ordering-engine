@@ -12,7 +12,7 @@ if (!isset($_SESSION['client_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_SESSION['is_guest']) && $_SESSION['is_guest'] == true) {
+    if (isset($_SESSION['is_guest']) && $_SESSION['is_guest'] === true) {
         header("Location: index.php?error=avis_fail");
         exit();
     }
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fidelite = new Fidelite($db);
 
         if ($fidelite->ajouterAvis($client_id, $restaurant_id, $note, $contenu)) {
-            header("Location: index.php?msg=avis_ok"); 
+            header("Location: index.php?msg=avis_ok");
             exit();
         }
     }

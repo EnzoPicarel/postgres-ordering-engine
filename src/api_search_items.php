@@ -16,7 +16,6 @@ try {
     require_once __DIR__ . '/models/Plats.php';
 
     $db = (new Database())->getConnection();
-    -
     $item = new Plat($db);
 
     $term = isset($_GET['term']) ? trim($_GET['term']) : '';
@@ -31,6 +30,6 @@ try {
 
 } catch (Exception $e) {
     error_log($e->getMessage());
-    echo json_encode([]); 
+    echo json_encode([]);
 }
 ?>
