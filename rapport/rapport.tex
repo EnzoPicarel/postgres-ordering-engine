@@ -98,7 +98,7 @@ Nous avons implémenté les règles de gestion suivantes pour garantir la cohér
     \item \textbf{RG06 :} Un client est identifié par une adresse email unique.
     \item \textbf{RG07 :} Via ses commandes, un client qui a un compte lié (au restaurant) cumule des points de fidélité indépendamment pour chaque restaurant 
     \item \textbf{RG08 :} Des remises (pourcentage ou item offert) sont débloquées lorsque le client atteint certains seuils de points définis par le restaurant.
-    \item \textbf{RG09 :} (A FAIRE) Si le client à un compte lié au restaurant, il peut déposer un commentaire contenant une note, visible par les autres clients.
+    \item \textbf{RG09 :} Si le client à un compte lié au restaurant, il peut déposer un commentaire contenant une note, visible par les autres clients.
 \end{itemize}
 
 \paragraph{Commandes}
@@ -114,13 +114,13 @@ Nous avons implémenté les règles de gestion suivantes pour garantir la cohér
 \paragraph{Formules (ou Menu)}
 \begin{itemize}
     \item \textbf{RG16 :} Une formule est définie par un prix fixe et une structure de catégories (ex: 1 Entrée + 1 Plat).
-    \item \textbf{RG17 :} (A FAIRE) Une formule peut avoir des conditions de validité (jours de la semaine, horaires, midi/soir).
+    \item \textbf{RG17 :} Une formule peut avoir des conditions de validité (jours de la semaine, horaires, midi/soir).
     \item \textbf{RG18 :} Lors de l'achat d'une formule, les items choisis par le client sont liés à une instance spécifique de cette formule dans la commande, afin de distinguer les items "au menu" des items "à la carte
 \end{itemize}
 
 \paragraph{Géolocalisation}
 \begin{itemize}
-    \item \textbf{RG19 :} La recherche par proximité affiche uniquement les restaurants situés dans un rayon défini (par défaut 3km) autour de la position de l'utilisateur.
+    \item \textbf{RG19 :} La recherche par proximité affiche uniquement les restaurants situés dans un rayon défini (par défaut 2km) autour de la position de l'utilisateur.
     \item \textbf{RG20 :} La distance est calculée "à vol d'oiseau" sur la sphère terrestre (formule de géographie PostGIS).
 \end{itemize}
 
@@ -162,7 +162,7 @@ Nous avons identifié et implémenté les opérations suivantes, classées par d
 
     \item \textbf{Géolocalisation (PostGIS) :}
     \begin{itemize}
-        \item \textbf{Recherche par proximité :} Utilisation de l'extension spatiale \textbf{PostGIS}. Nous utilisons les fonctions \texttt{ST\_MakePoint} pour créer des géométries à partir des coordonnées GPS et \texttt{ST\_DWithin} pour filtrer les restaurants dans un rayon précis (3km).
+        \item \textbf{Recherche par proximité :} Utilisation de l'extension spatiale \textbf{PostGIS}. Nous utilisons les fonctions \texttt{ST\_MakePoint} pour créer des géométries à partir des coordonnées GPS et \texttt{ST\_DWithin} pour filtrer les restaurants dans un rayon précis (2km).
         \item \textbf{Calcul de distance :} Affichage de la distance réelle entre le client et le restaurant grâce à la fonction \texttt{ST\_Distance} projetée sur la sphère terrestre (\texttt{geography}).
     \end{itemize}
 \end{enumerate}
