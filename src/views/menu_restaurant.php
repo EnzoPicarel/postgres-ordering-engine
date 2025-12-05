@@ -431,6 +431,10 @@
         if ($client_id && $stmt_commande_by_restau) {
             $ma_commande = $stmt_commande_by_restau->fetch(PDO::FETCH_ASSOC);
         }
+
+        if (!isset($items_in_cart)) {
+            $items_in_cart = [];
+        }
         ?>
 
         <div class="restaurant-header">
@@ -523,22 +527,22 @@
                                 }
                                 echo "</form>";
 
-                                echo "</div>"; // Fin btn-action-group
-                                echo "</div>"; // Fin plat-actions
-                    
-                                // Complements section
+                                echo "</div>";
+                                echo "</div>";
+
                                 if ($plat['has_complements'] == 1) {
+                                    $baseInCart = isset($items_in_cart[$plat['item_id']]) && $items_in_cart[$plat['item_id']] > 0;
                                     echo "<div style='margin-top: 10px; font-size: 0.85rem;'>";
-                                    
-                                    // ATTENTION AUX GUILLEMETS ICI
-                                    // data-item-id doit contenir la valeur PHP
-                                    echo "<button class='complement-toggle' 
-                                            data-item-id='" . $plat['item_id'] . "' 
-                                            data-resto-id='" . $current_resto_id . "' 
-                                            style='background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; padding: 0; font-size: inherit;'>
-                                            Voir compléments ▼
-                                        </button>";
-                                        
+                                    if ($baseInCart) {
+                                        echo "<button class='complement-toggle' 
+                                                data-item-id='" . $plat['item_id'] . "' 
+                                                data-resto-id='" . $current_resto_id . "' 
+                                                style='background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; padding: 0; font-size: inherit;'>
+                                                Voir compléments ▼
+                                            </button>";
+                                    } else {
+                                        echo "<span style='color:#999;'>Ajoutez ce plat au panier pour voir les compléments.</span>";
+                                    }
                                     echo "</div>";
                                 }
 
@@ -602,7 +606,7 @@
             document.querySelectorAll('.complement-toggle').forEach(btn => {
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
-                    
+
                     // 1. Récupération propre des IDs
                     const itemId = this.dataset.itemId;
                     const restaurantId = this.dataset.restoId; // On utilise uniquement celui-ci
@@ -631,7 +635,7 @@
                                 list.innerHTML = '<em style="color: #999;">Pas de compléments disponibles</em>';
                             } else {
                                 let html = '<div style="font-weight: 600; margin-bottom: 8px; color:#e67e22;">Compléments disponibles :</div>';
-                                
+
                                 data.forEach(comp => {
                                     // Construction du HTML complet et valide
                                     html += `
