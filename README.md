@@ -84,5 +84,5 @@ DB_PORT=5432
 ## Remarques sur le Makefile
 - Le Makefile inclut les cibles `createdb`, `dropdb`, `psql`, `create`, `insert`, `select`, `update` pour exécuter les fichiers SQL correspondants.
 - Il utilise les variables de `.env` ou les valeurs par défaut si le fichier n'existe pas.
-- Pour une liste complète des cibles : `make help` (si ajouté au Makefile).
+- Pour une liste complète des cibles : `make help`. 
 - Exemple d'utilisation : `make createdb && make create && make insert` pour initialiser la base et insérer des données.
