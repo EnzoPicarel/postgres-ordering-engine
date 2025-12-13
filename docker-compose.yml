@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgis/postgis:13-3.3
+    container_name: postgres-ordering-engine-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+      POSTGRES_DB: ${DB_NAME:-restaurants}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./drop.sql:/docker-entrypoint-initdb.d/00-drop.sql:ro
+      - ./create.sql:/docker-entrypoint-initdb.d/01-create.sql:ro
+      - ./insert.sql:/docker-entrypoint-initdb.d/02-insert.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-restaurants}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: postgres-ordering-engine-web
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-restaurants}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASS: ${DB_PASS:-postgres}
+    volumes:
+      - ./:/var/www/html:cached
+    restart: unless-stopped
+
+volumes:
+  dbdata:
