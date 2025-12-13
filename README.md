@@ -2,6 +2,8 @@
 
 A complete restaurant ordering platform with PostgreSQL/PostGIS backend and PHP frontend. Features multiple restaurants, customer loyalty programs, order management, and customizable menu formulas.
 
+---
+
 ## 🚀 Quick Start (Local Development with Docker)
 
 **Run the entire stack locally in 3 commands:**
@@ -111,3 +113,7 @@ The project was initially deployed on a private school server (VPN-only access):
 **Note:** Requires Bordeaux-INP network access
 
 This Docker setup makes the project **open-source ready** and runnable anywhere.
+
+## 👥 Authors
+
+Thibault Abeille - Raphaël Bely - Numa Guiot - Enzo Picarel
