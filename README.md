@@ -1,69 +1,113 @@
-# BDD Project - Restaurant Ordering System
+# Restaurant Ordering System
 
-## Web Application
+A complete restaurant ordering platform with PostgreSQL/PostGIS backend and PHP frontend. Features multiple restaurants, customer loyalty programs, order management, and customizable menu formulas.
 
-The deployed web application is accessible at:
+## 🚀 Quick Start (Local Development with Docker)
 
-**URL**: https://tabeille001.zzz.bordeaux-inp.fr/src/index.php
-
-## Project Overview
-
-This project implements a complete restaurant menu ordering system with a PostgreSQL database backend and PHP web application frontend. The system supports multiple restaurants, customers with loyalty programs, and order management with formulas (menus) and complements.
-
-## Prerequisites
-
-- **Web Server**: Apache or compatible web server with PHP support
-- **PHP 8.0+**: With PDO PostgreSQL extension
-- **PostgreSQL 13+**: With PostGIS extension (database hosted on Bordeaux-INP server)
-- **Network Access**: Connection to tabeille001.zzz.bordeaux-inp.fr
-
-## Installation & Deployment
-
-### Database Setup
-
-The application connects to a PostgreSQL database hosted on the Bordeaux-INP server. The database has been initialized with the following SQL scripts:
-
-#### 1. Initialize Database Schema
-
-Execute the SQL initialization scripts on the Bordeaux-INP PostgreSQL server:
+**Run the entire stack locally in 3 commands:**
 
 ```bash
-# Run the database initialization scripts in order
-PGPASSWORD="bEe1974Ca!" psql -h tabeille001.zzz.bordeaux-inp.fr -U tabeille001 -d tabeille001 -f drop.sql
-PGPASSWORD="bEe1974Ca!" psql -h tabeille001.zzz.bordeaux-inp.fr -U tabeille001 -d tabeille001 -f create.sql
-PGPASSWORD="bEe1974Ca!" psql -h tabeille001.zzz.bordeaux-inp.fr -U tabeille001 -d tabeille001 -f insert.sql
+# 1. Copy environment configuration
+cp .env.example .env
+
+# 2. Start all services (PHP + PostgreSQL + PostGIS)
+docker-compose up --build
+
+# 3. Open in browser
+# → http://localhost:8080/src/index.php
 ```
 
-#### 2. Application Deployment
+The database initializes automatically with sample data.
 
-The PHP application has been deployed to the Bordeaux-INP web server using FileZilla. The application files are already in place and accessible at:
+## 📋 Prerequisites
+
+**For Docker setup (recommended):**
+- Docker Engine 20.10+
+- Docker Compose v2.0+
+
+**For manual setup:**
+- PHP 8.0+ with PDO PostgreSQL extension
+- PostgreSQL 13+ with PostGIS extension
+- Apache or compatible web server
+
+## 🏗️ Project Structure
 
 ```
-https://tabeille001.zzz.bordeaux-inp.fr/src/index.php
+├── docker-compose.yml      # Docker orchestration (web + db services)
+├── Dockerfile             # PHP 8.1 + Apache + pdo_pgsql
+├── .env.example           # Environment variables  template
+├── src/                   # PHP application code
+│   ├── config/           # Database configuration
+│   ├── models/           # Business logic & DB models
+│   └── views/            # HTML presentation layer
+├── drop.sql              # Database cleanup script
+├── create.sql            # Database schema (tables, functions, triggers)
+└── insert.sql            # Sample data (restaurants, items, customers)
 ```
 
-The application automatically connects to the Bordeaux-INP PostgreSQL database using the credentials configured in `src/config/Database.php`:
+## 🐳 Docker Setup (Recommended)
 
-```php
-private $host = "tabeille001.zzz.bordeaux-inp.fr";    
-private $db_name = "tabeille001"; 
-private $username = "tabeille001"; 
-private $password = "bEe1974Ca!";
-```
-
-## Database Verification
-
-To verify that the database has been properly initialized with all tables and data, execute:
+### Start the Application
 
 ```bash
-# Check that all tables were created
-# Should display 27 tables: restaurants, items, clients, commandes, fidelite, etc.
-PGPASSWORD="bEe1974Ca!" psql -h tabeille001.zzz.bordeaux-inp.fr -U tabeille001 -d tabeille001 -c "\dt"
-
-
-# List all restaurants
-PGPASSWORD="bEe1974Ca!" psql -h tabeille001.zzz.bordeaux-inp.fr -U tabeille001 -d tabeille001 -c "SELECT * FROM restaurants;"
-
-# Count orders
-PGPASSWORD="bEe1974Ca!" psql -h tabeille001.zzz.bordeaux-inp.fr -U tabeille001 -d tabeille001 -c "SELECT COUNT(*) FROM commandes;"
+docker-compose up --build
 ```
+
+**What happens:**
+1. **Database** (PostgreSQL 13 + PostGIS) starts on port `5432` (default)
+2. Automatically runs `drop.sql` → `create.sql` → `insert.sql`
+3. **Web server** (PHP 8.1 + Apache) starts on port `8080`
+4. Health check ensures DB is ready before web starts
+
+**Access the app:** http://localhost:8080/src/index.php
+
+### Stop the Application
+
+```bash
+docker-compose down
+```
+
+### Reset Database (Fresh Start)
+
+```bash
+docker-compose down -v  # Remove volumes
+docker-compose up --build
+```
+
+### Configuration
+
+Edit `.env` to customize:
+```env
+DB_NAME=restaurants
+DB_USER=postgres
+DB_PASS=postgres
+DB_HOST=db
+DB_PORT=5432
+```
+
+## 🔧 Manual Database Verification
+
+Connect to the running database:
+
+```bash
+# Set password from .env
+export PGPASSWORD="postgres"
+
+# List all tables (should show ~27 tables)
+psql -h localhost -p 5432 -U postgres -d restaurants -c "\dt"
+
+# View restaurants
+psql -h localhost -p 5432 -U postgres -d restaurants -c "SELECT nom, adresse FROM restaurants;"
+
+# Check orders count
+psql -h localhost -p 5432 -U postgres -d restaurants -c "SELECT COUNT(*) FROM commandes;"
+```
+
+## 🎓 Original Deployment (Bordeaux-INP Server)
+
+The project was initially deployed on a private school server (VPN-only access):
+
+**URL:** https://tabeille001.zzz.bordeaux-inp.fr/src/index.php  
+**Note:** Requires Bordeaux-INP network access
+
+This Docker setup makes the project **open-source ready** and runnable anywhere.
