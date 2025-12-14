@@ -4,7 +4,7 @@
   <p align="center">
     A complete restaurant ordering platform featuring <strong>PostGIS geolocation</strong>, <strong>ACID-compliant order processing</strong>, and <strong>Dockerized architecture</strong>.
     <br />
-    <a href="#-quick-start-local-development-with-docker"><strong>Quick Start »</strong></a>
+    <a href="#-getting-started"><strong>Quick Start »</strong></a>
   </p>
   
   ![CI Status](https://img.shields.io/badge/build-passing-brightgreen)
@@ -16,7 +16,7 @@ This project simulates a centralized food delivery ecosystem connecting customer
 
 The project is built to handle **complex business rules**, such as verifying delivery zones via spatial queries, enforcing strict menu composition constraints (Formulas), and managing atomic transactions for orders and loyalty points.
 
-*Built as a Semester 7 System Engineering project at ENSEIRB-MATMECA.*
+*Built as a Semester 7 project at ENSEIRB-MATMECA.*
 
 ### 🛠 Built With
 * **Backend:** PHP 8.1 (PDO)
@@ -26,7 +26,6 @@ The project is built to handle **complex business rules**, such as verifying del
 * **Server:** Apache
 
 ## 📐 Architecture
-
 ### Technical Highlights
 * **Geospatial Processing (PostGIS):** Calculates distances and delivery zones using `ST_Distance` and `ST_DWithin` spatial queries.
 * **ACID Transactions:** Ensures atomicity for orders and inventory updates to prevent data inconsistency.
@@ -35,10 +34,7 @@ The project is built to handle **complex business rules**, such as verifying del
 ### File Organization
 ```text
 ├── docker-compose.yml      # Docker orchestration (web + db services)
-├── Dockerfile              # PHP 8.1 + Apache + pdo_pgsql
-├── .env.example            # Environment variables template
 ├── src/                    # PHP application code
-│   ├── config/             # Database connection parameters
 │   ├── models/             # Business logic & DB models
 │   └── views/              # HTML presentation layer
 ├── drop.sql                # Database cleanup script
@@ -46,104 +42,56 @@ The project is built to handle **complex business rules**, such as verifying del
 └── insert.sql              # Sample data (restaurants, items, customers)
 ```
 
-## 🚀 Quick Start (Local Development with Docker)
+## 🚀 Getting Started
 
-**Run the entire stack locally in 3 commands:**
+### Prerequisites
+* **Docker Engine** (20.10+)
+* **Docker Compose** (v2.0+)
 
-```bash
-# 1. Copy environment configuration
-cp .env.example .env
+### Installation & Build
+1. **Clone and Setup Environment**
+   ```bash
+   # Clone the repo
+   git clone https://github.com/EnzoPicarel/postgres-ordering-engine.git
+   
+   #Configure environment
+   cp .env.example .env
+   ```
 
-# 2. Start all services (PHP + PostgreSQL + PostGIS)
-docker-compose up --build
-
-# 3. Open in browser
-# → http://localhost:8080/src/index.php
-```
-
-The database initializes automatically with sample data.
-
-## 📋 Prerequisites
-
-**For Docker setup (recommended):**
-- Docker Engine 20.10+
-- Docker Compose v2.0+
-
-**For manual setup:**
-- PHP 8.0+ with PDO PostgreSQL extension
-- PostgreSQL 13+ with PostGIS extension
-- Apache or compatible web server
-
-## 🐳 Docker Setup (Recommended)
-
-### Start the Application
-
-```bash
-docker-compose up --build
-```
+2. Build and start services (Database + Web Server)
+   ```bash
+   docker-compose up --build
+   ```
 
 **What happens:**
-1. **Database** (PostgreSQL 13 + PostGIS) starts on port `5432` (default)
-2. Automatically runs `drop.sql` → `create.sql` → `insert.sql`
-3. **Web server** (PHP 8.1 + Apache) starts on port `8080`
-4. Health check ensures DB is ready before web starts
+1.  **Database** (PostgreSQL 13 + PostGIS) starts on port `5432`.
+2.  **Auto-Seeding:** Runs `drop.sql` → `create.sql` → `insert.sql`.
+3.  **Web Server** (PHP 8.1 + Apache) starts on port `8080`.
 
 **Access the app:** [http://localhost:8080/src/index.php](http://localhost:8080/src/index.php)
 
-### Stop the Application
+### Stopping the App
+```bash
+docker-compose down       # Stop containers
+docker-compose down -v    # Stop and wipe database volumes (Fresh Start)
+```
+
+## 🧪 Database Verification
+You can interact directly with the running container to verify data integrity:
 
 ```bash
-docker-compose down
+# Check total orders
+docker exec -it restaurants_db psql -U postgres -d restaurants -c "SELECT COUNT(*) FROM commandes;"
+
+# List restaurants with coordinates
+docker exec -it restaurants_db psql -U postgres -d restaurants -c "SELECT nom, ST_AsText(position) FROM restaurants;"
 ```
-
-### Reset Database (Fresh Start)
-
-```bash
-docker-compose down -v  # Remove volumes
-docker-compose up --build
-```
-
-### Configuration
-
-Edit `.env` to customize:
-```env
-DB_NAME=restaurants
-DB_USER=postgres
-DB_PASS=postgres
-DB_HOST=db
-DB_PORT=5432
-```
-
-## 🔧 Manual Database Verification
-
-Connect to the running database:
-
-```bash
-# Set password from .env
-export PGPASSWORD="postgres"
-
-# List all tables (should show ~27 tables)
-psql -h localhost -p 5432 -U postgres -d restaurants -c "\dt"
-
-# View restaurants
-psql -h localhost -p 5432 -U postgres -d restaurants -c "SELECT nom, adresse FROM restaurants;"
-
-# Check orders count
-psql -h localhost -p 5432 -U postgres -d restaurants -c "SELECT COUNT(*) FROM commandes;"
-```
-
-## 🎓 Original Deployment (Bordeaux-INP Server)
-
-The project was initially deployed on a private school server:
-
-**URL:** https://tabeille001.zzz.bordeaux-inp.fr/src/index.php  
-**Note:** Requires Bordeaux-INP network access
-
-This Docker setup makes the project **open-source ready** and runnable anywhere.
 
 ## 👥 Authors
-
 * **Enzo Picarel**
 * **Thibault Abeille**
 * **Raphaël Bely**
 * **Numa Guiot**
+
+---
+*Original Deployment: Hosted on private Bordeaux-INP server. This Docker version enables public use.*
