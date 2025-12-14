@@ -18,6 +18,13 @@ The project is built to handle **complex business rules**, such as verifying del
 
 *Built as a Semester 7 System Engineering project at ENSEIRB-MATMECA.*
 
+### 🛠 Built With
+* **Backend:** PHP 8.1 (PDO)
+* **Database:** PostgreSQL 13 + **PostGIS Extension**
+* **Frontend:** HTML5 / CSS3 / JavaScript
+* **Infrastructure:** Docker & Docker Compose
+* **Server:** Apache
+
 ## 📐 Architecture
 
 ### Technical Highlights
