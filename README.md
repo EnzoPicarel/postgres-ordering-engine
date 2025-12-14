@@ -1,8 +1,43 @@
-# Restaurant Ordering System
+<div align="center">
+  <h3 align="center">Postgres Ordering Engine</h3>
 
-A complete restaurant ordering platform with PostgreSQL/PostGIS backend and PHP frontend. Features multiple restaurants, customer loyalty programs, order management, and customizable menu formulas.
+  <p align="center">
+    A complete restaurant ordering platform featuring <strong>PostGIS geolocation</strong>, <strong>ACID-compliant order processing</strong>, and <strong>Dockerized architecture</strong>.
+    <br />
+    <a href="#-quick-start-local-development-with-docker"><strong>Quick Start »</strong></a>
+  </p>
+  
+  ![CI Status](https://img.shields.io/badge/build-passing-brightgreen)
+  ![License](https://img.shields.io/badge/license-MIT-blue)
+</div>
 
----
+## 🔍 About The Project
+This project simulates a centralized food delivery ecosystem connecting customers to multiple restaurants. 
+
+The project is built to handle **complex business rules**, such as verifying delivery zones via spatial queries, enforcing strict menu composition constraints (Formulas), and managing atomic transactions for orders and loyalty points.
+
+*Built as a Semester 7 System Engineering project at ENSEIRB-MATMECA.*
+
+## 📐 Architecture
+
+### Technical Highlights
+* **Geospatial Processing (PostGIS):** Calculates distances and delivery zones using `ST_Distance` and `ST_DWithin` spatial queries.
+* **ACID Transactions:** Ensures atomicity for orders and inventory updates to prevent data inconsistency.
+* **Database Logic:** Uses PL/pgSQL triggers and stored procedures to enforce business rules directly at the data level.
+
+### File Organization
+```text
+├── docker-compose.yml      # Docker orchestration (web + db services)
+├── Dockerfile              # PHP 8.1 + Apache + pdo_pgsql
+├── .env.example            # Environment variables template
+├── src/                    # PHP application code
+│   ├── config/             # Database connection parameters
+│   ├── models/             # Business logic & DB models
+│   └── views/              # HTML presentation layer
+├── drop.sql                # Database cleanup script
+├── create.sql              # Database schema (tables, functions, triggers)
+└── insert.sql              # Sample data (restaurants, items, customers)
+```
 
 ## 🚀 Quick Start (Local Development with Docker)
 
@@ -32,21 +67,6 @@ The database initializes automatically with sample data.
 - PostgreSQL 13+ with PostGIS extension
 - Apache or compatible web server
 
-## 🏗️ Project Structure
-
-```
-├── docker-compose.yml      # Docker orchestration (web + db services)
-├── Dockerfile             # PHP 8.1 + Apache + pdo_pgsql
-├── .env.example           # Environment variables  template
-├── src/                   # PHP application code
-│   ├── config/           # Database configuration
-│   ├── models/           # Business logic & DB models
-│   └── views/            # HTML presentation layer
-├── drop.sql              # Database cleanup script
-├── create.sql            # Database schema (tables, functions, triggers)
-└── insert.sql            # Sample data (restaurants, items, customers)
-```
-
 ## 🐳 Docker Setup (Recommended)
 
 ### Start the Application
@@ -61,7 +81,7 @@ docker-compose up --build
 3. **Web server** (PHP 8.1 + Apache) starts on port `8080`
 4. Health check ensures DB is ready before web starts
 
-**Access the app:** http://localhost:8080/src/index.php
+**Access the app:** [http://localhost:8080/src/index.php](http://localhost:8080/src/index.php)
 
 ### Stop the Application
 
@@ -107,7 +127,7 @@ psql -h localhost -p 5432 -U postgres -d restaurants -c "SELECT COUNT(*) FROM co
 
 ## 🎓 Original Deployment (Bordeaux-INP Server)
 
-The project was initially deployed on a private school server (VPN-only access):
+The project was initially deployed on a private school server:
 
 **URL:** https://tabeille001.zzz.bordeaux-inp.fr/src/index.php  
 **Note:** Requires Bordeaux-INP network access
@@ -116,4 +136,7 @@ This Docker setup makes the project **open-source ready** and runnable anywhere.
 
 ## 👥 Authors
 
-Thibault Abeille - Raphaël Bely - Numa Guiot - Enzo Picarel
+* **Enzo Picarel**
+* **Thibault Abeille**
+* **Raphaël Bely**
+* **Numa Guiot**
