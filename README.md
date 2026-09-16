@@ -7,8 +7,12 @@
     <a href="#-getting-started"><strong>Quick Start »</strong></a>
   </p>
   
-  ![CI Status](https://img.shields.io/badge/build-passing-brightgreen)
-  ![License](https://img.shields.io/badge/license-MIT-blue)
+  <p align="center">
+    <img alt="PHP" src="https://img.shields.io/badge/PHP-777BB4?style=flat&amp;logo=php&amp;logoColor=white">
+    <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&amp;logo=postgresql&amp;logoColor=white">
+    <img alt="PostGIS" src="https://img.shields.io/badge/PostGIS-008A45?style=flat&amp;logoColor=white">
+    <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?style=flat&amp;logo=docker&amp;logoColor=white">
+  </p>
 </div>
 
 ## 🔍 About The Project
